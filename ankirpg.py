@@ -59,8 +59,6 @@ def setup():
             user_id = str(user_id)
             config = {'token' : api_token, 'user' : user_id }
             json.dump( config, open( conffile, 'w' ) )
-            deck_habitpost = urllib2.Request('https://habitrpg.com/api/v1/user/task/Anki/up','POST')
-            timebox_habitpost = urllib2.Request('https://habitrpg.com/api/v1/user/task/Anki%20Timebox%20Reached/up','POST')
             deck_habitpost.add_header('x-api-user', user_id)
             deck_habitpost.add_header('x-api-key', api_token)
             timebox_habitpost.add_header('x-api-user', user_id)
