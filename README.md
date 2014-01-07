@@ -11,9 +11,14 @@ Inspired by: https://github.com/Pherr/HabitRPG-Anki-Addon
 Uses some code from https://github.com/Pherr/HabitRPG-Anki-Addon but scores you for reaching the end of your
 timebox or reviewing all scheduled cards in a deck instead of scoring you for correct answers.
 
-I feel that you should reward yourself for effort, not performance. Once the other project is fixed, I
-suppose you could use both addons at the same time if you wanted to reward yourself for both performance and
-effort.
+I feel that you should reward yourself for effort, not just performance. This Anki addon gives you points in
+your HabitRPG account for the following:
+
+1. No more cards to review in a deck - Scores 'Anki Deck Complete'
+2. Reached a timebox? - Scores 'Anki Timebox Reached'
+3. Get flashcards right? - Scores 'Anki Correct Answer' once for every five cards you remember.
+
+*The three habits will be created automatically for you.
 
 INSTALLATION
 ============
@@ -29,9 +34,10 @@ USE
 ===
 
 Once you set the timebox time limit, Anki will display a message when you have worked on a deck of cards for
-the set amount of time. If you are connected to the internet, AnkiRPG will give you points on HabitRPG. Anki
-will give you the option to continue reviewing cards and present you with the same message after another 
-interval of however many minutes you set the timebox time limit to and AnkiRPG will again give you points.
+the set amount of time. If you are connected to the internet, AnkiRPG will give you points on HabitRPG when
+Anki syncs its decks. Anki will give you the option to continue reviewing cards and present you with the 
+same message after another interval of however many minutes you set the timebox time limit to and AnkiRPG 
+will again give you points.
 
 AnkiRPG will also give you points when you have reviewed all scheduled cards in a deck and have no more cards
 to review.
