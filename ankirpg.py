@@ -48,6 +48,7 @@ if os.path.exists(conffile):    # Load config file
 
 #Setup menu to configure HRPG userid and api key
 def setup():
+    global config
     if os.path.exists(conffile):
         config = json.load(open(conffile, 'r'))
         api_token = config['token']
