@@ -1,6 +1,7 @@
 #AnkiRPG
 #Anki 2 plugin for use with HabitRPG http://habitrpg.com
 #Author: Edward Shapard <ed.shapard@gmail.com>
+#Version 0.03
 #License: GNU GPL v3 <www.gnu.org/licenses/gpl.html>
 
 import urllib2, urllib,  os, sys, json
