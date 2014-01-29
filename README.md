@@ -25,7 +25,7 @@ INSTALLATION
 
 Linux:
 
-Install ankirpg.py to $HOME/Anki/addons/ directory
+Install ankihrpg.py to $HOME/Anki/addons/ directory
 Start Ank and run Tools >> Setup HabitRPG
      enter userID and apiKey from HabitRPG
 
@@ -34,7 +34,7 @@ Tools >> Preferences >> Timebox time limit
 
 Windows and Mac:
 
-Install ankirpg.py to [your home directory]/Documents/Anki/addons directory
+Install ankihrpg.py to [your home directory]/Documents/Anki/addons directory
 Start Ank and run Tools >> Setup HabitRPG
      enter userID and apiKey from HabitRPG
 
