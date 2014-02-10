@@ -1,4 +1,4 @@
-AnkiRPG
+AnkiHRPG
 =======
 
 Anki 2 add-on for use with HabitRPG. Automatically scores habits when you reach the end of your Anki timebox 
