@@ -1,7 +1,7 @@
 #AnkiRPG
 #Anki 2 plugin for use with HabitRPG http://habitrpg.com
 #Author: Edward Shapard <ed.shapard@gmail.com>
-#Version 0.03
+#Version 0.04
 #License: GNU GPL v3 <www.gnu.org/licenses/gpl.html>
 
 import urllib2, urllib,  os, sys, json
@@ -96,12 +96,14 @@ def deck_complete_habit(self):
     Syncer.decks += 1
 
 def card_answered(self, ease):  # Cache number of correct answers
+    global config
     if Syncer.habit_configured:
         if ease > 1:
             Syncer.score += 1
             config['score'] = Syncer.score
 
 def save_stats(x,y):
+    global config
     config['decks'] = Syncer.decks
     config['timeboxes'] = Syncer.timeboxes
     config['score'] = Syncer.score
@@ -110,6 +112,7 @@ def save_stats(x,y):
 
 #Sync scores to HabitRPG
 def habitrpg_sync(x):
+    global config
     if Syncer.habit_configured:
         if internet_on:
             #Sync decks
