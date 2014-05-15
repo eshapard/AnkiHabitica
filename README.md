@@ -20,6 +20,8 @@ your HabitRPG account for the following:
 
 *The three habits will be created automatically for you.
 
+Set the new habits to positive only for best results.
+
 INSTALLATION
 ============
 
@@ -41,6 +43,9 @@ Start Ank and run Tools >> Setup HabitRPG
 To set up timeboxing for Anki:
 Tools >> Preferences >> Timebox time limit
 
+
+Set the new habits to positive only for best results.
+
 USE
 ===
 
@@ -57,3 +62,5 @@ to review.
             you have no more cards to review. This pops up when you open a deck with no scheduled cards and 
             I don't know any way around the problem, but it isn't a big deal to me.
             
+            
+Set the new habits to positive only for best results.
