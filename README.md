@@ -4,7 +4,7 @@ AnkiHRPG
 Anki 2 add-on for use with HabitRPG. Automatically scores habits when you reach the end of your Anki timebox 
 and when you review all cards in a deck.
 
-For use with HabitRGP: http://habitrpg.com
+For use with HabitRPG: http://habitrpg.com
 
 Inspired by: https://github.com/Pherr/HabitRPG-Anki-Addon
 
@@ -24,6 +24,11 @@ Set the new habits to positive only for best results.
 
 INSTALLATION
 ============
+
+The Easy Way:
+In Anki, go to Tools >> Add-ons >> Browse & Install
+Paste in the following code: 690333219
+
 
 Linux:
 
