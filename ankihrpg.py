@@ -1,4 +1,4 @@
-#AnkiRPG
+#AnkiHRPG
 #Anki 2 plugin for use with HabitRPG http://habitrpg.com
 #Author: Edward Shapard <ed.shapard@gmail.com>
 #Version 0.04
