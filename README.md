@@ -55,12 +55,12 @@ USE
 ===
 
 Once you set the timebox time limit, Anki will display a message when you have worked on a deck of cards for
-the set amount of time. If you are connected to the internet, AnkiRPG will give you points on HabitRPG when
+the set amount of time. If you are connected to the internet, AnkiHRPG will give you points on HabitRPG when
 Anki syncs its decks. Anki will give you the option to continue reviewing cards and present you with the 
-same message after another interval of however many minutes you set the timebox time limit to and AnkiRPG 
+same message after another interval of however many minutes you set the timebox time limit to and AnkiHRPG 
 will again give you points.
 
-AnkiRPG will also give you points when you have reviewed all scheduled cards in a deck and have no more cards
+AnkiHRPG will also give you points when you have reviewed all scheduled cards in a deck and have no more cards
 to review.
      *Note: This behavior will also be triggered when you open up a deck with no cards scheduled for review.
             The scoring function is wrapped around the Anki function that displays the message saying that 
