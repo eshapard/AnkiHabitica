@@ -27,7 +27,7 @@ INSTALLATION
 
 The Easy Way:
 In Anki, go to Tools >> Add-ons >> Browse & Install
-Paste in the following code: 690333219
+Paste in the following code: 954979168 
 
 
 Linux:
