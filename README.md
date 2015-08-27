@@ -35,6 +35,8 @@ Linux:
 Install ankihrpg.py to $HOME/Anki/addons/ directory
 Start Ank and run Tools >> Setup HabitRPG
      enter userID and apiKey from HabitRPG
+     
+     Habitica userID and apiKey: These are NOT your username and password! See the API section of the settings menu in habitica: https://habitrpg.com/#/options/settings/api
 
 To set up timeboxing for Anki:
 Tools >> Preferences >> Timebox time limit
