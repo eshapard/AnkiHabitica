@@ -15,9 +15,9 @@ from aqt.main import AnkiQt
 config ={}
 conffile = os.path.join(os.path.dirname(os.path.realpath(__file__)), ".habitrpg.conf")
 conffile = conffile.decode(sys.getfilesystemencoding())
-deck_habitpost = urllib2.Request('https://habitrpg.com/api/v2/user/tasks/Anki%20Deck%20Complete/up','')
-timebox_habitpost = urllib2.Request('https://habitrpg.com/api/v2/user/tasks/Anki%20Timebox%20Reached/up','')
-score_habitpost = urllib2.Request('https://habitrpg.com/api/v2/user/tasks/Anki%20Correct%20Answer/up','')
+deck_habitpost = urllib2.Request('https://habitica.com/api/v2/user/tasks/Anki%20Deck%20Complete/up','')
+timebox_habitpost = urllib2.Request('https://habitica.com/api/v2/user/tasks/Anki%20Timebox%20Reached/up','')
+score_habitpost = urllib2.Request('https://habitica.com/api/v2/user/tasks/Anki%20Correct%20Answer/up','')
 Syncer.timeboxes = 0
 Syncer.decks = 0
 Syncer.score = 0
@@ -25,7 +25,7 @@ Syncer.habit_configured = False
 
 def internet_on():
     try:
-        response=urllib2.urlopen('http://habitrpg.com',timeout=1)
+        response=urllib2.urlopen('http://habitica.com',timeout=1)
         return True
     except urllib2.URLError as err: pass
     return False
