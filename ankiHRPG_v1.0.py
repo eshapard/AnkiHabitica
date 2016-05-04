@@ -1,7 +1,7 @@
 #AnkiHRPG
 #Anki 2 plugin for use with HabitRPG http://habitrpg.com
 #Author: Edward Shapard <ed.shapard@gmail.com>
-#Version 1.0
+#Version 1.01
 #License: GNU GPL v3 <www.gnu.org/licenses/gpl.html>
 
 import urllib2, urllib,  os, sys, json
@@ -80,8 +80,6 @@ def setup():
 		user_id = config['user']
 		hrpg_score = config['score']
 		hrpg_tries = config['tries']
-		hrpg_decks = config['decks']
-		hrpg_timeboxes = config['timeboxes']
 	else:
 		config['score'] = hrpg_score
 		config['tries'] = hrpg_tries
