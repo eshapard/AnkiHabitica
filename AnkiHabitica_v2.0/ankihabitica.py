@@ -252,8 +252,8 @@ def hrpg_realtime():
 	
 	#Evaluate score if Anki Habitica is configured
 	if settings['configured']:
-		#Post to Habitica if score is over sched
-		if config[settings['profile']]['score'] >= settings['sched']:
+		#Post to Habitica if sched is a multiple of score
+		if config[settings['profile']]['score'] % settings['sched'] == 0:
 			#Check internet if down
 			if not settings['internet']:
 				settings['internet'] = settings['habitica'].test_internet()
@@ -261,13 +261,20 @@ def hrpg_realtime():
 				#Update habitica stats if we haven't yet
 				if settings['habitica'].lvl == 0:
 					settings['habitica'].update_stats()
-				#try to score habit
-				if settings['habitica'].earn_points():
-					#Remove points from score tally
-					config[settings['profile']]['score'] -= settings['sched']
-				else:
-					#Scoring failed. Check internet
-					settings['internet'] = settings['habitica'].test_internet()
+				#Loop through scoring up to 3 times
+				#-- to account for missed scoring opportunities
+				i = 0 #loop counter
+				while i < 3 and config[settings['profile']]['score'] > settings['sched']:
+					#try to score habit
+					if settings['habitica'].earn_points():
+						#Remove points from score tally
+						config[settings['profile']]['score'] -= settings['sched']
+					else:
+						#Scoring failed. Check internet
+						settings['internet'] = settings['habitica'].test_internet()
+					i += 1
+
+
 
 #################################
 ### Support Multiple Profiles ###
