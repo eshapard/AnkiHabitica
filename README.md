@@ -12,12 +12,14 @@ Inspired by: https://github.com/Pherr/HabitRPG-Anki-Addon
 INSTALLATION
 ============
 
-The Easy Way:
+## The Easy Way:
 In Anki, go to Tools >> Add-ons >> Browse & Install
 Paste in the following code: 954979168 
 
+## Manual Installation
+**WARNING: Version 2.0 is experimental. I am still working on it!**
 
-Linux:
+### Linux:
 
 Install the latest version of ankiHRPG.py to $HOME/Anki/addons/ directory
 Start Ank and run Tools >> Setup HabitRPG
@@ -28,13 +30,12 @@ Habitica userID and apiKey: These are NOT your username and password! See the AP
 To set up timeboxing for Anki:
 Tools >> Preferences >> Timebox time limit
 
-Windows and Mac:
+### Windows and Mac:
 
 Install latest version of ankiHRPG.py to [your home directory]/Documents/Anki/addons directory
 Start Ank and run Tools >> Setup HabitRPG
      enter userID and apiKey from HabitRPG
      
-**WARNING: Version 2.0 is experimental. I am still working on it!**
 
 To set up timeboxing for Anki:
 Tools >> Preferences >> Timebox time limit
