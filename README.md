@@ -34,7 +34,7 @@ Install latest version of ankiHRPG.py to [your home directory]/Documents/Anki/ad
 Start Ank and run Tools >> Setup HabitRPG
      enter userID and apiKey from HabitRPG
      
-WARNING: Version 2.0 is experimental. I am still working on it!
+''WARNING: Version 2.0 is experimental. I am still working on it!''
 
 To set up timeboxing for Anki:
 Tools >> Preferences >> Timebox time limit
