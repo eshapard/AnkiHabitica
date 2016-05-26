@@ -8,6 +8,7 @@ import urllib2, os, sys, json
 from anki.hooks import wrap, addHook
 from aqt.reviewer import Reviewer
 from anki.sched import Scheduler
+from anki.sync import Syncer
 from aqt.profiles import ProfileManager
 from aqt import *
 from aqt.main import AnkiQt
@@ -20,9 +21,9 @@ settings['name'] = 'Anki User' #temporary, will be replaced with real Habitica n
 settings['sched'] = 12 #score habitica for this many correct answers
 settings['threshold'] = 8 #should be about 80% of sched. Your points double here
 settings['step'] = 1 #this is how many points each tick of the progress bar represents
-settings['tries_eq'] = 3 #this many wrong answers gives us one correct answer point
+settings['tries_eq'] = 2 #this many wrong answers gives us one correct answer point
 settings['barcolor'] = '#603960' #progress bar highlight color
-settings['barbgcolor'] = '#bfbfbf' #progress bar background color
+settings['barbgcolor'] = '#BFBFBF' #progress bar background color
 settings['timeboxpoints'] = 1 #points earned for a timebox
 settings['deckpoints'] = 0 #points earned for clearing a deck
 
@@ -210,9 +211,10 @@ def make_habit_progbar():
 		configure_ankihabitica()
 	length = int(settings['sched'] / settings['step'])
 	if settings['configured']:
-		point_length = int(config[settings['profile']]['score']/settings['step']) % length
-		bar = min(length, point_length)
+		point_length = int(config[settings['profile']]['score']/settings['step']) % length #total bar length
+		bar = min(length, point_length) #length of full bar
 		hrpg_progbar = '<font color="%s">' % settings['barcolor']
+		#full bar for each tick
 		for i in range(bar):
 			hrpg_progbar += "&#9608;"
 		hrpg_progbar += '</font>'
@@ -228,6 +230,12 @@ def make_habit_progbar():
 ################################
 ### Score Habit in Real Time ###
 ################################
+
+#Initialize habitica class
+def initialize_habitica_class():
+	#utils.showInfo("Initializing Habitica Class\n\n%s\n%s\n%s\n%s\n%s" % (settings['user'], settings['token'], settings['profile'], iconfile, conffile))
+	settings['habitica'] = Habitica(settings['user'], settings['token'], settings['profile'], iconfile, conffile)
+	settings['initialized'] = True
 
 #Process Habitica Points in real time
 def hrpg_realtime():
@@ -246,9 +254,7 @@ def hrpg_realtime():
 	#initialize habitica class if AnkiHabitica is configured
 	#and class is not yet initialized
 	if settings['configured'] and not settings['initialized']:
-		#utils.showInfo("Initializing Habitica Class\n\n%s\n%s\n%s\n%s\n%s" % (settings['user'], settings['token'], settings['profile'], iconfile, conffile))
-		settings['habitica'] = Habitica(settings['user'], settings['token'], settings['profile'], iconfile, conffile)
-		settings['initialized'] = True
+		initialize_habitica_class()
 	
 	#Evaluate score if Anki Habitica is configured
 	if settings['configured']:
@@ -257,6 +263,10 @@ def hrpg_realtime():
 			#Check internet if down
 			if not settings['internet']:
 				settings['internet'] = settings['habitica'].test_internet()
+			#If Internet is still down but class initialized
+			if not settings['internet'] and settings['initialized']:
+				settings['habitica'].hrpg_showInfo("Hmmm...\n\nI can't connect to Habitica. Perhaps your internet is down.\n\nI'll remember your points and try again later.")
+
 			if settings['internet'] and settings['initialized']:
 				#Update habitica stats if we haven't yet
 				if settings['habitica'].lvl == 0:
@@ -264,9 +274,9 @@ def hrpg_realtime():
 				#Loop through scoring up to 3 times
 				#-- to account for missed scoring opportunities
 				i = 0 #loop counter
-				while i < 3 and config[settings['profile']]['score'] > settings['sched']:
+				while i < 3 and config[settings['profile']]['score'] > settings['sched'] and settings['internet']:
 					#try to score habit
-					if settings['habitica'].earn_points():
+					if settings['habitica'].earn_points("Anki Points"):
 						#Remove points from score tally
 						config[settings['profile']]['score'] -= settings['sched']
 					else:
@@ -287,12 +297,25 @@ def grab_profile(self, name, passwd=None ):
 		#utils.showInfo("adding %s to config dict" % settings['profile'])
 		config[settings['profile']]={}
 	#utils.showInfo("your profile is %s" % settings['profile'])
+	else:
+		#profile is in config
+		if settings['user'] and settings['token']:
+			#initialize habitica class
+			#if not yet initialized
+			if not settings['initialized']:
+				initialize_habitica_class()
+			#insert wrap code into sync
+			if settings['initialized']:
+				Syncer.sync = wrap(Syncer.sync, settings['habitica'].scorecount_on_sync, "before")
+
 
 
 
 #################
 ### Wrap Code ###
 #################
+#Note: Code to post last sync date and score count to habits is
+#      conditional and in the grab_profile function above.
 
 Reviewer._answerCard = wrap(Reviewer._answerCard, card_answered, "before")
 if settings['timeboxpoints']:
