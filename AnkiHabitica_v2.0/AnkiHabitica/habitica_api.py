@@ -46,7 +46,7 @@ class HabiticaAPI(object):
         return self.request("get", "/user/tasks")
 
     def task(self, task_id):
-        return self.request("get", "/user/task/%s" % task_id)
+        return self.request("get", "/user/tasks/%s" % task_id)
 
     def create_task(self, task_type, text, date = "", note = "", attrib = "rand", priority = 1):
         attributes = ['str', 'int', 'con', 'per']
