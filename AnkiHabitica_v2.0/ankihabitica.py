@@ -13,24 +13,34 @@ from aqt.profiles import ProfileManager
 from aqt import *
 from aqt.main import AnkiQt
 from AnkiHabitica.habitica_class import Habitica
+from AnkiHabitica import db_helper
 settings={}
 
-### Reward Schedule - YOU MAY EDIT THESE
+### Reward Schedule and Settings - YOU MAY EDIT THESE
+#Note: Anki Habitica keeps track of its own points.
+#      Once those points reach the 'sched' limit,
+#      Anki Habitica scores the 'Anki Points' habit.
 
-settings['name'] = 'Anki User' #temporary, will be replaced with real Habitica name
-settings['sched'] = 12 #score habitica for this many correct answers
-settings['threshold'] = 8 #should be about 80% of sched. Your points double here
+############### YOU MAY EDIT THESE SETTINGS ###############
+settings['sched'] = 10 #score habitica for this many points
 settings['step'] = 1 #this is how many points each tick of the progress bar represents
-settings['tries_eq'] = 2 #this many wrong answers gives us one correct answer point
+settings['tries_eq'] = 2 #this many wrong answers gives us one point
 settings['barcolor'] = '#603960' #progress bar highlight color
 settings['barbgcolor'] = '#BFBFBF' #progress bar background color
-settings['timeboxpoints'] = 1 #points earned for a timebox
-settings['deckpoints'] = 0 #points earned for clearing a deck
+settings['timeboxpoints'] = 1 #points earned for each 15 min 'timebox'
+settings['matured_eq'] = 2 #this many matured cards gives us one point
+settings['learned_eq'] = 2 #this many newly learned cards gives us one point
+settings['deckpoints'] = 10 #points earned for clearing a deck
+settings['show_mini_stats'] = True #Show Habitica HP, XP, and MP %s next to prog bar
+settings['show_popup'] = True #show a popup window when you score points.
+settings['score_on_sync'] = False #score any un-scored points silently when you sync Anki
 
-### Nothing for users to edit below this point###
+### NOTHING FOR USERS TO EDIT below this point ####
 
 #Set some initial values
 config ={}
+settings['name'] = 'Anki User' #temporary, will be replaced with real Habitica name
+settings['threshold'] = int(0.8 * settings['sched'])
 settings['configured'] = False #If config file exists
 settings['initialized'] = False #If habitica class is initialized
 settings['internet'] = False #Can connect to habitica
@@ -38,20 +48,13 @@ settings['profile'] = 'User 1' #Will be changed to current password
 settings['token'] = None #Holder for current profile api-token
 settings['user'] = None #Holder for current profile user-id
 
-###################################
-### config files and icon files ###
-###################################
-#Note: I may move the icon files to the habitica_class file
+####################
+### Config Files ###
+####################
 
 #old_conffile = os.path.join(os.path.dirname(os.path.realpath(__file__)), ".habitrpg.conf")
 conffile = os.path.join(os.path.dirname(os.path.realpath(__file__)), "AnkiHabitica/AnkiHabitica.conf")
-iconfile = os.path.join(os.path.dirname(os.path.realpath(__file__)), "AnkiHabitica/habitica_icon.png")
-avatarfile = os.path.join(os.path.dirname(os.path.realpath(__file__)), "AnkiHabitica/avatar.png")
 conffile = conffile.decode(sys.getfilesystemencoding())
-iconfile = iconfile.decode(sys.getfilesystemencoding())
-avatarfile = avatarfile.decode(sys.getfilesystemencoding())
-if os.path.exists(avatarfile): #use avatar.png as icon if it exists
-	iconfile = avatarfile
 
 
 #Function to read the configuration file and give warning message if a problem exists
@@ -73,13 +76,13 @@ def read_conf_file(conffile):
 		settings['user'] = False
 		return
 	#add defualt scores if missing
-	for i in ['score','tries']:
+	for i in ['score', 'oldscore']:
 		if i not in config[settings['profile']]:
 			config[settings['profile']][i] = 0
 	settings['configured'] = True
 	
 #Save stats to config file 
-def save_stats(x,y):
+def save_stats(x=None,y=None):
 	global config, conffile
 	json.dump( config, open( conffile, 'w' ) )
 
@@ -134,8 +137,8 @@ def setup():
 			json.dump( config, open( conffile, 'w' ) )
 			try:
 				read_conf_file(conffile)
-				utils.showInfo("Congratulations!\n\nAnkiHabitica has been setup for profile: %s." % profile)
 				settings['configured'] = True
+				utils.showInfo("Congratulations!\n\nAnkiHabitica has been setup for profile: %s." % profile)
 			except:
 				utils.showInfo("An error occured. AnkiHabitica was NOT setup.")
 					
@@ -146,10 +149,6 @@ action = QAction("Setup Anki Habitica", mw)
 mw.connect(action, SIGNAL("triggered()"), setup)
 mw.form.menuTools.addAction(action)
 
-####################################
-### Update Score Based on Events ###
-####################################
-
 #Configure AnkiHabitica
 #We must run this after Anki has initialized and loaded a profile
 def configure_ankihabitica():
@@ -159,46 +158,40 @@ def configure_ankihabitica():
 	else:
 		settings['configured'] = False
 
-#Timebox Reached
-def timebox_habit(self):
-	global settings
-	if not settings['configured']:
-		configure_ankihabitica()
-	elapsed = self.mw.col.timeboxReached()
-	if elapsed:
-		config[settings['profile']]['score'] += settings['timeboxpoints']
+###############################
+### Calculate Current Score ###
+###############################
 
-#Deck Completed
-def deck_complete_habit(self):
-	global settings
-	if not settings['configured']:
-		configure_ankihabitica()
-	config[settings['profile']]['score'] += settings['deckpoints']
 
-#Run after a card is answered
-def card_answered(self, ease):  # Cache number of correct answers and tries
-	global config
-	global settings
-	if not settings['configured']:
-		configure_ankihabitica()
-	if settings['configured']:
-		if ease <= 1:
-			config[settings['profile']]['tries'] += 1
-			#Every X tries adds 1 to the score
-			if config[settings['profile']]['tries'] % settings['tries_eq'] == 0 and config[settings['profile']]['tries'] > settings['tries_eq']:
-				config[settings['profile']]['score'] += 1
-				config[settings['profile']]['tries'] -= settings['tries_eq']
-			  
-		if ease > 1:
-			#Answered Question Correctly
-			config[settings['profile']]['score'] += 1
-		#double points if above threshold
-		if (config[settings['profile']]['score'] % settings['sched']) > settings['threshold']:
-			config[settings['profile']]['score'] += 1
+#Compare score to database
+def compare_score_to_db():
+	global config, settings
+	if settings['initialized'] and 'Anki Points' in settings['habitica'].hnote and settings['habitica'].hnote['Anki Points']['scoresincedate']:
+		score_count = settings['habitica'].hnote['Anki Points']['scorecount']
+		start_date = settings['habitica'].hnote['Anki Points']['scoresincedate']
+		scored_points = int(score_count * settings['sched'])
+		dbscore = calculate_db_score(start_date)
+		newscore = dbscore - scored_points
+		if newscore < 0: newscore = 0 #sanity check
+		config[settings['profile']]['oldscore'] = config[settings['profile']]['score'] # Capture old score
+		config[settings['profile']]['score'] = newscore
+		return True
+	return False
 
-		if settings['user'] and settings['token']:
-		    #Score points in real time only if we have a userid and token
-		    hrpg_realtime()  
+#Calculate score from database
+def calculate_db_score(start_date):
+	global config, settings
+	dbcorrect = int(db_helper.correct_answer_count(start_date))
+	dbwrong = int(db_helper.wrong_answer_count(start_date) / settings['tries_eq'])
+	dbtimebox = int(db_helper.timebox_count(start_date) * settings['timeboxpoints'])
+	dbdecks = int(db_helper.decks_count(start_date) * settings['deckpoints'])
+	dblearned = int(db_helper.learned_count(start_date) / settings['learned_eq'])
+	dbmatured = int(db_helper.matured_count(start_date) / settings['matured_eq'])
+	dbscore = dbcorrect + dbwrong + dbtimebox + dbdecks + dblearned + dbmatured	
+	#utils.tooltip(_("%s\ndatabase says we have %s\nrecord shows we have %s\nscore: %s" % (start_date, dbscore, temp, config[settings['profile']]['score'])), 2000)
+	if dbscore < 0: dbscore = 0 #sanity check
+	return dbscore
+
 
 ####################
 ### Progress Bar ###
@@ -206,19 +199,33 @@ def card_answered(self, ease):  # Cache number of correct answers and tries
 
 #Make progress bar
 def make_habit_progbar():
-	global settings
+	global settings, config
+	cur_score = config[settings['profile']]['score']
 	if not settings['configured']:
 		configure_ankihabitica()
-	length = int(settings['sched'] / settings['step'])
+	#length of progress bar excluding increased rate after threshold
+	real_length = int(settings['sched'] / settings['step'])
+	#length of progress bar including apparent rate increase after threshold
+	fake_length = int(1.2 * real_length)
 	if settings['configured']:
-		point_length = int(config[settings['profile']]['score']/settings['step']) % length #total bar length
-		bar = min(length, point_length) #length of full bar
+		#length of shaded bar excluding threshold trickery
+		real_point_length = int(cur_score / settings['step']) % real_length #total real bar length
+		#Find extra points to add to shaded bar to make the
+		#   bar seem to double after threshold
+		if real_point_length >= settings['threshold']:
+			extra = real_point_length - settings['threshold']
+		else:
+			extra = 0
+		#length of shaded bar including threshold trickery
+		fake_point_length = int(real_point_length + extra)
+		#shaded bar should not be larger than whole prog bar
+		bar = min(fake_length, fake_point_length) #length of shaded bar
 		hrpg_progbar = '<font color="%s">' % settings['barcolor']
 		#full bar for each tick
 		for i in range(bar):
 			hrpg_progbar += "&#9608;"
 		hrpg_progbar += '</font>'
-		points_left = int(length) - int(bar)
+		points_left = int(fake_length) - int(bar)
 		hrpg_progbar += '<font color="%s">' % settings['barbgcolor']
 		for i in range(points_left):
 			hrpg_progbar += "&#9608"
@@ -233,105 +240,179 @@ def make_habit_progbar():
 
 #Initialize habitica class
 def initialize_habitica_class():
-	#utils.showInfo("Initializing Habitica Class\n\n%s\n%s\n%s\n%s\n%s" % (settings['user'], settings['token'], settings['profile'], iconfile, conffile))
-	settings['habitica'] = Habitica(settings['user'], settings['token'], settings['profile'], iconfile, conffile)
+	settings['habitica'] = Habitica(settings['user'], settings['token'], settings['profile'], conffile, settings['show_popup'])
 	settings['initialized'] = True
+	settings['habitica'].scorecount_on_sync()
 
-#Process Habitica Points in real time
-def hrpg_realtime():
-	global config, settings, iconfile, conffile
-	#if not settings['configured']:
-	#	configure_ankihabitica()
-	crit_multiplier = 0
-	streak_multiplier = 0
-	drop_text = ""
-	drop_type = ""
+#Run various checks to see if we are ready
+def ready_or_not():
+	#Configure if not already
+	if not settings['configured']:
+		configure_ankihabitica()
 
 	#Return immediately if we don't have both the userid and token
 	if not settings['user'] and not settings['token']:
-		return
+		return False
 
 	#initialize habitica class if AnkiHabitica is configured
 	#and class is not yet initialized
 	if settings['configured'] and not settings['initialized']:
 		initialize_habitica_class()
-	
-	#Evaluate score if Anki Habitica is configured
-	if settings['configured']:
-		#Post to Habitica if sched is a multiple of score
-		if config[settings['profile']]['score'] % settings['sched'] == 0:
-			#Check internet if down
-			if not settings['internet']:
-				settings['internet'] = settings['habitica'].test_internet()
-			#If Internet is still down but class initialized
-			if not settings['internet'] and settings['initialized']:
-				settings['habitica'].hrpg_showInfo("Hmmm...\n\nI can't connect to Habitica. Perhaps your internet is down.\n\nI'll remember your points and try again later.")
+	#Check to make sure habitica class is initialized
+	if not settings['initialized']: return False
+		
+	if settings['configured'] and settings['initialized']:
+		return True
+	else:
+		return False
 
-			if settings['internet'] and settings['initialized']:
-				#Update habitica stats if we haven't yet
-				if settings['habitica'].lvl == 0:
-					settings['habitica'].update_stats()
-				#Loop through scoring up to 3 times
-				#-- to account for missed scoring opportunities
-				i = 0 #loop counter
-				while i < 3 and config[settings['profile']]['score'] > settings['sched'] and settings['internet']:
-					#try to score habit
-					if settings['habitica'].earn_points("Anki Points"):
-						#Remove points from score tally
-						config[settings['profile']]['score'] -= settings['sched']
-					else:
-						#Scoring failed. Check internet
-						settings['internet'] = settings['habitica'].test_internet()
-					i += 1
 
+#Process Habitica Points in real time
+def hrpg_realtime():
+	global config, settings, iconfile, conffile
+	crit_multiplier = 0
+	streak_multiplier = 0
+	drop_text = ""
+	drop_type = ""
+
+	#Check if we are ready; exit if not
+	if not ready_or_not(): return False
+
+	#Post to Habitica if we just crossed a sched boundary
+	#  because it's possible to earn multiple points at a time,
+	#  (due to matured cards, learned cards, etc.)
+	#  We can't rely on the score always being a multiple of sched
+	#  as in the commented condition below...
+	#if config[settings['profile']]['score'] % settings['sched'] == 0:
+	if int(config[settings['profile']]['score'] / settings['sched']) > int(config[settings['profile']]['oldscore'] / settings['sched']):
+		#Check internet if down
+		if not settings['internet']:
+			settings['internet'] = settings['habitica'].test_internet()
+		#If Internet is still down
+		if not settings['internet']:
+			settings['habitica'].hrpg_showInfo("Hmmm...\n\nI can't connect to Habitica. Perhaps your internet is down.\n\nI'll remember your points and try again later.")
+
+		#if Internet is UP
+		if settings['internet']:
+			#Update habitica stats if we haven't yet
+			if settings['habitica'].lvl == 0:
+				settings['habitica'].update_stats()
+			#Loop through scoring up to 3 times
+			#-- to account for missed scoring opportunities
+			i = 0 #loop counter
+			while i < 3 and config[settings['profile']]['score'] >= settings['sched'] and settings['internet']:
+				#try to score habit
+				if settings['habitica'].earn_points("Anki Points"):
+					#Remove points from score tally
+					config[settings['profile']]['score'] -= settings['sched']
+				else:
+					#Scoring failed. Check internet
+					settings['internet'] = settings['habitica'].test_internet()
+				i += 1
+			#just in case
+			if config[settings['profile']]['score'] < 0:
+				config[settings['profile']]['score'] = 0
+
+
+#############################
+### Process Score Backlog ###
+#############################
+
+#    Score habitica task for reviews that have not been scored yet
+#    for example, reviews that were done on a smartphone.
+def score_backlog(silent=False):
+	global config, settings
+	#Warn User that this can take some time
+	warning = "Warning: Scoring backlog may take some time.\n\nWould you like to continue?"
+	if not silent:
+		cont = utils.askUser(warning)
+	else:
+		cont = True
+	if not cont: return False
+
+	#Exit if not ready
+	if not ready_or_not(): return False
+
+	#Check internet if down
+	if not settings['internet']:
+		settings['internet'] = settings['habitica'].test_internet()
+	#If Internet is still down but class initialized
+	if not settings['internet'] and settings['initialized']:
+		if not silent: settings['habitica'].hrpg_showInfo("Hmmm...\n\nI can't connect to Habitica. Perhaps your internet is down.\n\nI'll remember your points and try again later.")
+		return False
+	#Compare database to scored points
+	if compare_score_to_db():
+		if config[settings['profile']]['score'] < settings['sched']:
+			if not silent: utils.showInfo("No backlog to score")
+			return True
+		#OK, now we can score some points...
+		p = 0 #point counter
+		i = 0 #limit tries to 25 to prevent endless loop
+		while i < 25 and config[settings['profile']]['score'] >= settings['sched'] and settings['internet']:
+			try:
+				settings['habitica'].silent_earn_points("Anki Points")
+				config[settings['profile']]['score'] -= settings['sched']
+				i += 1
+				p += 1
+			except:
+				i += 1
+		if not silent: utils.showInfo("%s points scored on Habitica" % p)
+		#utils.showInfo("New scorecount: %s" % settings['habitica'].hnote['Anki Points']['scorecount'])
+		save_stats(None, None)
+
+#Add Score Backlog to menubar
+action = QAction("Score Habitica Backlog", mw)
+mw.connect(action, SIGNAL("triggered()"), score_backlog)
+mw.form.menuTools.addAction(action)
 
 
 #################################
 ### Support Multiple Profiles ###
 #################################
 
-def grab_profile(self, name, passwd=None ):
+def grab_profile():
 	global config, settings
-	settings['profile'] = name
+	#settings['profile'] = name
+	settings['profile'] = str(aqt.mw.pm.name)
+	#utils.showInfo("your profile is %s" % (settings['profile']))
 	if settings['profile'] not in config:
 		#utils.showInfo("adding %s to config dict" % settings['profile'])
 		config[settings['profile']]={}
-	#utils.showInfo("your profile is %s" % settings['profile'])
-	else:
-		#profile is in config
-		if settings['user'] and settings['token']:
-			#initialize habitica class
-			#if not yet initialized
-			if not settings['initialized']:
-				initialize_habitica_class()
-			#insert wrap code into sync
-			if settings['initialized']:
-				Syncer.sync = wrap(Syncer.sync, settings['habitica'].scorecount_on_sync, "before")
+	ready_or_not()
 
+#############
+### Sync ####
+#############
 
+#This is the function that will be run on sync.
+def ahsync(stage):
+	if stage == "login" and settings['initialized']:
+		settings['habitica'].scorecount_on_sync()
+		if settings['score_on_sync']:
+			score_backlog(True)
+		save_stats(None, None)
 
 
 #################
 ### Wrap Code ###
 #################
-#Note: Code to post last sync date and score count to habits is
-#      conditional and in the grab_profile function above.
 
-Reviewer._answerCard = wrap(Reviewer._answerCard, card_answered, "before")
-if settings['timeboxpoints']:
-	Reviewer.nextCard = wrap(Reviewer.nextCard, timebox_habit, "before")
-if settings['deckpoints']:
-	Scheduler.finishedMsg = wrap(Scheduler.finishedMsg, deck_complete_habit, "before")
+addHook("profileLoaded", grab_profile)
+addHook("sync", ahsync)
 AnkiQt.closeEvent = wrap(AnkiQt.closeEvent, save_stats, "before")
-ProfileManager.load = wrap(ProfileManager.load, grab_profile)
-
 
 #Insert progress bar into bottom review stats
-def my_remaining(self):
-	hrpg_progbar = make_habit_progbar()
-	ret = orig_remaining(self)
-	if not hrpg_progbar == "":
-		ret += " : %s" % (hrpg_progbar)
-	return ret
+#       along with database scoring and realtime habitica routines
 orig_remaining = Reviewer._remaining
+def my_remaining(x):
+	ret = orig_remaining(x)
+	if compare_score_to_db():
+		hrpg_progbar = make_habit_progbar()
+		hrpg_realtime()
+		if not hrpg_progbar == "":
+			ret += " : %s" % (hrpg_progbar)
+		if settings['initialized'] and settings ['show_mini_stats']:
+			mini_stats = settings['habitica'].compact_habitica_stats()
+			if mini_stats: ret += " : %s" % (mini_stats)
+	return ret
 Reviewer._remaining = my_remaining
