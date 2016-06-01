@@ -1,23 +1,33 @@
 #!/usr/bin/python
 from habitica_api import HabiticaAPI
-import os, sys, json, datetime
+import os, sys, json, datetime, time
 from aqt import *
 from aqt.main import AnkiQt
+import db_helper
 
 class Habitica(object):
+    #find icon file
+    iconfile = os.path.join(os.path.dirname(os.path.realpath(__file__)), "habitica_icon.png")
+    avatarfile = os.path.join(os.path.dirname(os.path.realpath(__file__)), "avatar.png")
+    iconfile = iconfile.decode(sys.getfilesystemencoding())
+    avatarfile = avatarfile.decode(sys.getfilesystemencoding())
+    if os.path.exists(avatarfile): #use avatar.png as icon if it exists
+        iconfile = avatarfile
     
-    def __init__(self, user_id, api_token, profile, iconfile, conffile):
+    def __init__(self, user_id, api_token, profile, conffile, show_popup=True):
         self.api = HabiticaAPI(user_id, api_token)
         self.profile = profile
-        self.iconfile = iconfile
         self.conffile = conffile
+        self.show_popup = show_popup
         self.name = 'Anki User'
         self.lvl = 0
         self.xp = 0
+	self.xt = 0
         self.gp = 0
         self.hp = 0
 	self.ht = 50
         self.mp = 0
+	self.mt = 0
         self.stats = {}
         self.hrpg_attempt = 0
 	self.hnote = {}
@@ -31,8 +41,8 @@ class Habitica(object):
         icon = QMessageBox.Information
         mb = QMessageBox(parent)
         mb.setText(text)
-        if os.path.isfile(self.iconfile):
-            mb.setIconPixmap(QPixmap(self.iconfile))
+        if os.path.isfile(Habitica.iconfile):
+            mb.setIconPixmap(QPixmap(Habitica.iconfile))
         else:
             mb.setIcon(icon)
         mb.setWindowModality(Qt.WindowModal)
@@ -62,6 +72,9 @@ class Habitica(object):
         self.gp = self.stats['gp']
         self.hp = self.stats['hp']
         self.mp = self.stats['mp']
+	self.xt = self.stats['toNextLevel']
+	self.ht = self.stats['maxHealth']
+	self.mt = self.stats['maxMP']
         return
 
     def score_anki_points(self, habit):
@@ -87,17 +100,27 @@ class Habitica(object):
                 return False
         return True
 
+    def reset_scorecounter(self, habit):
+        curtime = int(time.time())
+        self.hnote[habit] = {'scoresincedate' : curtime, 'scorecount': 0}
+	self.habit_checked[habit] = True
+
     def grab_scorecounter(self, habit):
 	try:
             response = self.api.task(habit)
         except:
           return False
-        #Try to grab the scorecount and last score date
+        #Try to grab the scorecount and score since date
         try: 
            self.hnote[habit] = json.loads(response['notes'])
+           if 'scoresincedate' not in self.hnote[habit] or 'scorecount' not in self.hnote[habit]:
+               #reset habit score counter if both keys not found
+               self.reset_scorecounter(habit)
+	   self.habit_checked[habit] = True
            return True
 	except:
-           self.hnote[habit] = {'lastscoredate' : datetime.datetime.now().strftime('%Y-%m-%d'), 'scorecount': 0} 
+           #failed to grab, so reset
+           self.reset_scorecounter(habit)
            return False
 
     def post_scorecounter(self, habit):
@@ -106,7 +129,7 @@ class Habitica(object):
 	data = {"notes" : datastring}
         return self.api.update_task(habit, data)
 
-    def scorecount_on_sync(self, x):
+    def scorecount_on_sync(self, x=None):
             for habit in self.habit_checked:
 	        if self.habit_checked[habit]:
                     self.post_scorecounter(habit)
@@ -149,24 +172,29 @@ class Habitica(object):
         if drop_type:
             hrpgresponse += "\nItem Drop! x%s" % (drop_type)
         #Show message box
-        self.hrpg_showInfo(hrpgresponse)
+        if self.show_popup:
+            self.hrpg_showInfo(hrpgresponse)
+        else:
+            self.hrpg_tooltip("Huzzah! You Scored Points!")
 
         #update levels
-        self.lvl = new_lvl
-        self.xp = new_xp
-        self.mp = new_mp
-        self.gp = new_gp
-        self.hp = new_hp
+        if new_lvl > self.lvl and self.lvl > 0:
+            self.update_stats()
+        else:
+            self.lvl = new_lvl
+            self.xp = new_xp
+            self.mp = new_mp
+            self.gp = new_gp
+            self.hp = new_hp
         return True
 
     def earn_points(self, habit):
 	#check habit if is is unchecked
         if not self.habit_checked[habit]:
 	    try:
-                self.hrpg_tooltip("Checking Habit Score Counter")
+                #self.hrpg_tooltip("Checking Habit Score Counter")
 	        self.check_anki_habit(habit)
                 self.grab_scorecounter(habit)
-		self.habit_checked[habit] = True
 	    except:
                 pass
         crit_multiplier = 0
@@ -204,3 +232,30 @@ class Habitica(object):
         #    pass
         return self.make_score_message(new_lvl, new_xp, new_mp, new_gp, new_hp, streak_bonus, crit_multiplier, drop_string, drop_type)
 
+    #Compact Habitica Stats
+    def compact_habitica_stats(self):
+    	if self.ht and self.xt and self.mt:
+		health = int( 100 * self.hp / self.ht )
+		experience = int( 100 * self.xp / self.xt )
+		mana = int( 100 * self.mp / self.mt )
+		string = "<font color='firebrick'>%s</font> | <font color='darkorange'>%s</font> | <font color='darkblue'>%s</font>" % (health, experience, mana)
+	else:
+		string = False
+	return string
+	
+    #Silent Version of Earn Points
+    def silent_earn_points(self, habit):
+	#check habit if is is unchecked
+        if not self.habit_checked[habit]:
+	    try:
+	        self.check_anki_habit(habit)
+                self.grab_scorecounter(habit)
+	    except:
+                pass
+        try:
+            self.score_anki_points(habit)
+            self.hnote[habit]['scorecount'] += 1
+        except:
+            return False
+        
+        return True
