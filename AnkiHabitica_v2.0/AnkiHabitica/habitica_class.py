@@ -140,7 +140,7 @@ class Habitica(object):
         #self.hrpg_tooltip("Testing Internet Connection")
         return self.api.test_internet()
             
-    def make_score_message(self, new_lvl, new_xp, new_mp, new_gp, new_hp, streak_bonus=0, crit_multiplier=0, drop_text=None, drop_type=None):
+    def make_score_message(self, new_lvl, new_xp, new_mp, new_gp, new_hp, streak_bonus=0, crit_multiplier=0, drop_dialog=None):
         hrpgresponse = "Huzzah! You Get Points!\nWell Done %s!\n" % (self.name)
         #Check for increases and add to message
         if new_lvl > self.lvl:
@@ -167,10 +167,8 @@ class Habitica(object):
             hrpgresponse += "\nCritical Hit! Bonus: +%s%%" % (int(float(crit_multiplier)))
         if streak_bonus:
             hrpgresponse += "\nStreak Bonus! +%s" % (int(streak_bonus))   
-        if drop_text:
-            hrpgresponse += "\nItem Drop! x%s" % (drop_text)
-        if drop_type:
-            hrpgresponse += "\nItem Drop! x%s" % (drop_type)
+        if drop_dialog:
+            hrpgresponse += "\n%s" % (drop_dialog)
         #Show message box
         if self.show_popup:
             self.hrpg_showInfo(hrpgresponse)
@@ -221,16 +219,17 @@ class Habitica(object):
             if 'crit' in msg['_tmp']:
                 #critical
                 crit_multiplier = str(round((100 * msg['_tmp']['crit']), 0))
-                if 'drop' in msg['_tmp']:
+                if 'drop' in msg['_tmp'] and 'dialog' in msg['_tmp']['drop']:
                     #drop happened
-		    drop_string = json.loads(msg['_tmp']['drop'])
+		    #drop_string = json.loads(msg['_tmp']['drop'])
                     #drop_text = msg['_tmp']['drop']['text']
                     #drop_type = msg['_tmp']['drop']['type']
+                    drop_dialog = msg['_tmp']['drop']['dialog']
 	#try:
         #    self.post_scorecounter(habit) #update notes string of habit
         #except:
         #    pass
-        return self.make_score_message(new_lvl, new_xp, new_mp, new_gp, new_hp, streak_bonus, crit_multiplier, drop_string, drop_type)
+        return self.make_score_message(new_lvl, new_xp, new_mp, new_gp, new_hp, streak_bonus, crit_multiplier, drop_dialog)
 
     #Compact Habitica Stats
     def compact_habitica_stats(self):
