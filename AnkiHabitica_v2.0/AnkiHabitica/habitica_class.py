@@ -197,9 +197,7 @@ class Habitica(object):
                 pass
         crit_multiplier = 0
         streak_bonus = 0
-	drop_string = None
-        drop_text = None
-        drop_type = None
+	drop_dialog = None
         try:
             msg = self.score_anki_points(habit)
             self.hnote[habit]['scorecount'] += 1
