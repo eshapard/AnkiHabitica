@@ -11,7 +11,7 @@ from anki.sched import Scheduler
 from anki.sync import Syncer
 from aqt.profiles import ProfileManager
 from aqt import *
-from aqt.main import AnkiQt
+#from aqt.main import AnkiQt
 from AnkiHabitica.habitica_class import Habitica
 from AnkiHabitica import db_helper
 settings={}
@@ -37,42 +37,68 @@ settings['score_on_sync'] = False #score any un-scored points silently when you 
 
 ### NOTHING FOR USERS TO EDIT below this point ####
 
-#Set some initial values
-config ={}
-settings['name'] = 'Anki User' #temporary, will be replaced with real Habitica name
+#Set some initial settings whenever we load a profile
+#  This includes reloading a profile
+def reset_ah_settings():
+	settings['name'] = 'Anki User' #temporary, will be replaced with real Habitica name
+	settings['initialized'] = False #If habitica class is initialized
+	settings['token'] = None #Holder for current profile api-token
+	settings['user'] = None #Holder for current profile user-id
+	settings['import_rejected'] = False #Prompt to import old config only once
+
+#Set these settings on initial run
 settings['threshold'] = int(0.8 * settings['sched'])
-settings['configured'] = False #If config file exists
-settings['initialized'] = False #If habitica class is initialized
 settings['internet'] = False #Can connect to habitica
+settings['conf_read'] = False #Read conf file only once
 settings['profile'] = 'User 1' #Will be changed to current password
-settings['token'] = None #Holder for current profile api-token
-settings['user'] = None #Holder for current profile user-id
+settings['configured'] = False #If config file exists
+reset_ah_settings()
 
 ####################
 ### Config Files ###
 ####################
 
-#old_conffile = os.path.join(os.path.dirname(os.path.realpath(__file__)), ".habitrpg.conf")
+old_conffile = os.path.join(os.path.dirname(os.path.realpath(__file__)), ".habitrpg.conf")
 conffile = os.path.join(os.path.dirname(os.path.realpath(__file__)), "AnkiHabitica/AnkiHabitica.conf")
 conffile = conffile.decode(sys.getfilesystemencoding())
+old_conffile = old_conffile.decode(sys.getfilesystemencoding())
+
+#Set empty config dictionaries
+config ={}
+old_config_exists = False
+if os.path.exists(old_conffile):   #Create dictionary if old conf file exists
+		old_config = {}
+		old_config_exists = True
 
 
 #Function to read the configuration file and give warning message if a problem exists
 def read_conf_file(conffile):
 	global settings, config
+	#Return immediately if we already checked credentials
+	if settings['conf_read']:
+		return
+	else:
+		settings['conf_read'] = True
+
 	if os.path.exists(conffile):    # Load config file
 		config = json.load(open(conffile, 'r'))
+
+	#add profile to config if not there
+	if settings['profile'] not in config:
+		config[settings['profile']] = {}
+
 	try:
 		settings['token'] = config[settings['profile']]['token']
+		#utils.showInfo("token: %s" % settings['token'])
 	except:
-		utils.showInfo("Could not retrive api_token from configuration file.\nTry deleting %s. and re-running Tools >> Setup Habitica" % (conffile))
+		utils.showInfo("Could not retrieve api_token from configuration file.\nTry running Tools >> Setup Habitica")
 		settings['token'] = False
 		return
 
 	try:
 		settings['user'] = config[settings['profile']]['user']
 	except:
-		utils.showInfo("Could not retrive user_id from configuration file.\nTry deleting %s. and re-running Tools >> Setup Habitica" % (conffile))
+		utils.showInfo("Could not retrieve user_id from configuration file.\nTry running Tools >> Setup Habitica")
 		settings['user'] = False
 		return
 	#add defualt scores if missing
@@ -81,14 +107,64 @@ def read_conf_file(conffile):
 			config[settings['profile']][i] = 0
 	settings['configured'] = True
 	
+#Function to read the OLD configuration file if it exists
+def read_OLD_conf_file(old_conffile):
+	global old_config
+	if os.path.exists(old_conffile):    # Load OLD config file
+		old_config = json.load(open(old_conffile, 'r'))
+	if 'token' in old_config and 'user' in old_config:
+		#old_config['token']
+		#old_config['user']
+		return True
+	return False
+
+
+	
 #Save stats to config file 
 def save_stats(x=None,y=None):
-	global config, conffile
+	global config, conffile, settings
+	#utils.showInfo("Saving Stats")
 	json.dump( config, open( conffile, 'w' ) )
+	#post scorecounter to habitica
+	#This is needed for profiles not synchronized to ankiweb
+	if settings['internet'] and settings['initialized']:
+		settings['habitica'].post_scorecounter("Anki Points")
 
-#Read values from file if it exists
-if os.path.exists(conffile):    # Load config file
-	read_conf_file(conffile)
+#Read values from file if it exists #Wait until profile is loaded first!
+#if os.path.exists(conffile):    # Load config file
+#	read_conf_file(conffile)
+
+#Configure AnkiHabitica
+#We must run this after Anki has initialized and loaded a profile
+def configure_ankihabitica():
+	global conffile, settings, old_config_exists, old_conffile, config, old_config
+	if os.path.exists(conffile):    # Load config file
+		read_conf_file(conffile)
+	else:
+		settings['configured'] = False
+
+	#Now see if we need to import the old file
+	if not settings['import_rejected'] and old_config_exists and not settings['configured']:
+		if read_OLD_conf_file(old_conffile):
+			#Ask user if he wants to import old settings
+			if utils.askUser("I can't find any Habitica credentials for this profile (%s), but I did find an old config file for an older version of ankiHRPG.\n\nWould you like to import these credentials?" % settings['profile']):
+				config[settings['profile']]['user'] = old_config['user']
+				config[settings['profile']]['token'] = old_config['token']
+				settings['user'] = old_config['user']
+				settings['token'] = old_config['token']
+				settings['configured'] = True
+				if utils.askUser("OK, I imorted the userID and APItoken from the old config file.\n\nWould you like to delete the old configuration file?"):
+					os.remove(old_conffile)
+					old_config_exists = False
+				#save new config and re-read
+				save_stats()
+				settings['conf_read'] = False
+				read_conf_file(conffile)
+
+
+			else:
+				#Only ask once
+				settings['import_rejected'] = True
 
 ##################
 ### Setup Menu ###
@@ -100,12 +176,8 @@ def setup():
 	api_token = None
 	user_id = None
 	need_info = True
-	#create dictionary for profile in config if not there
 	profile = settings['profile']
 	temp_keys={} #temporary dict to store keys
-	if profile not in config:
-		#utils.showInfo("%s not in config." % profile)
-		config[profile] = {}
 
 	if os.path.exists(conffile):
 		need_info = False
@@ -115,6 +187,12 @@ def setup():
 			temp_keys['user'] = config[profile]['user']
 		except:
 			need_info = True
+
+	#create dictionary for profile in config if not there
+	if profile not in config:
+		#utils.showInfo("%s not in config." % profile)
+		config[profile] = {}
+
 	if not need_info:
 		if utils.askUser("Habitica user credentials already entered for profile: %s.\nEnter new Habitica User ID and API token?" % profile):
 			need_info = True
@@ -134,10 +212,13 @@ def setup():
 			for i in ['user', 'token']:
 				temp_keys[i] = str(temp_keys[i]).replace(" ", "")
 				config[profile][i] = temp_keys[i]
-			json.dump( config, open( conffile, 'w' ) )
+			#save new config file
+			save_stats(None, None)
 			try:
+				#re-read new config file
+				settings['conf_read'] = False
 				read_conf_file(conffile)
-				settings['configured'] = True
+				settings['initialized'] = False
 				utils.showInfo("Congratulations!\n\nAnkiHabitica has been setup for profile: %s." % profile)
 			except:
 				utils.showInfo("An error occured. AnkiHabitica was NOT setup.")
@@ -149,15 +230,6 @@ action = QAction("Setup Anki Habitica", mw)
 mw.connect(action, SIGNAL("triggered()"), setup)
 mw.form.menuTools.addAction(action)
 
-#Configure AnkiHabitica
-#We must run this after Anki has initialized and loaded a profile
-def configure_ankihabitica():
-	global conffile
-	if os.path.exists(conffile):    # Load config file
-		read_conf_file(conffile)
-	else:
-		settings['configured'] = False
-
 ###############################
 ### Calculate Current Score ###
 ###############################
@@ -166,6 +238,10 @@ def configure_ankihabitica():
 #Compare score to database
 def compare_score_to_db():
 	global config, settings
+	#Return immediately if not ready
+	if not ready_or_not():
+		return False
+
 	if settings['initialized'] and 'Anki Points' in settings['habitica'].hnote and settings['habitica'].hnote['Anki Points']['scoresincedate']:
 		score_count = settings['habitica'].hnote['Anki Points']['scorecount']
 		start_date = settings['habitica'].hnote['Anki Points']['scoresincedate']
@@ -246,12 +322,23 @@ def initialize_habitica_class():
 
 #Run various checks to see if we are ready
 def ready_or_not():
+	global settings, config
+	profile = settings['profile']
 	#Configure if not already
 	if not settings['configured']:
 		configure_ankihabitica()
 
-	#Return immediately if we don't have both the userid and token
+	#Grab user and token if in config
 	if not settings['user'] and not settings['token']:
+		for i in ['user', 'token']:
+			try:
+				settings[i] = config[profile][i]
+			except:
+				pass
+
+	#Return immediately if we still don't have both the userid and token
+	if not settings['user'] and not settings['token']:
+		#utils.showInfo("Not Ready: no user or token")
 		return False
 
 	#initialize habitica class if AnkiHabitica is configured
@@ -262,8 +349,10 @@ def ready_or_not():
 	if not settings['initialized']: return False
 		
 	if settings['configured'] and settings['initialized']:
+		#utils.showInfo("Ready: %s %s" % (settings['user'], settings['token']))
 		return True
 	else:
+		#utils.showInfo("Not Ready")
 		return False
 
 
@@ -294,9 +383,6 @@ def hrpg_realtime():
 
 		#if Internet is UP
 		if settings['internet']:
-			#Update habitica stats if we haven't yet
-			if settings['habitica'].lvl == 0:
-				settings['habitica'].update_stats()
 			#Loop through scoring up to 3 times
 			#-- to account for missed scoring opportunities
 			i = 0 #loop counter
@@ -372,12 +458,12 @@ mw.form.menuTools.addAction(action)
 
 def grab_profile():
 	global config, settings
-	#settings['profile'] = name
+	reset_ah_settings()
 	settings['profile'] = str(aqt.mw.pm.name)
 	#utils.showInfo("your profile is %s" % (settings['profile']))
 	if settings['profile'] not in config:
+		config[settings['profile']] = {}
 		#utils.showInfo("adding %s to config dict" % settings['profile'])
-		config[settings['profile']]={}
 	ready_or_not()
 
 #############
@@ -399,7 +485,8 @@ def ahsync(stage):
 
 addHook("profileLoaded", grab_profile)
 addHook("sync", ahsync)
-AnkiQt.closeEvent = wrap(AnkiQt.closeEvent, save_stats, "before")
+addHook("unloadProfile", save_stats)
+#AnkiQt.closeEvent = wrap(AnkiQt.closeEvent, save_stats, "before")
 
 #Insert progress bar into bottom review stats
 #       along with database scoring and realtime habitica routines
