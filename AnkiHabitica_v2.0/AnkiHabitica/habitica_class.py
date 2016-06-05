@@ -20,6 +20,7 @@ class Habitica(object):
         self.conffile = conffile
         self.show_popup = show_popup
         self.name = 'Anki User'
+	self.user = None
         self.lvl = 0
         self.xp = 0
 	self.xt = 0
@@ -32,8 +33,13 @@ class Habitica(object):
         self.hrpg_attempt = 0
 	self.hnote = {}
 	self.habit_checked = {}
+	self.missing = {} #holds missing habits
 	for habit in ["Anki Points"]:
-	    self.habit_checked[habit] = False
+		self.habit_checked[habit] = False
+		self.check_anki_habit(habit)
+	#Grab user object
+	if self.test_internet():
+		self.update_stats()
 
     def hrpg_showInfo(self, text):
         #display a small message window with an OK Button
@@ -86,6 +92,24 @@ class Habitica(object):
         return self.api.update_task(habit, data)
 
     def check_anki_habit(self, habit):
+        #Check to see if habit exists
+	#utils.showInfo("Checking %s habit" % habit)
+        if habit not in self.missing:
+                found = False
+                tasks = self.api.tasks()
+                #utils.showInfo(tasks) 
+                for t in tasks:
+                    if t['id'] == habit:
+                        found = True
+                if found:
+                    self.missing[habit] = False
+		    #utils.showInfo("Task found")
+                    return True
+                else:
+                    self.missing[habit] = True
+		    #utils.showInfo("Task not found")
+                    return False
+
         #Check to see that habitica habit is set up properly
         try:
             response = self.api.task(habit)
@@ -106,10 +130,17 @@ class Habitica(object):
 	self.habit_checked[habit] = True
 
     def grab_scorecounter(self, habit):
+	#utils.showInfo("grabbing scorecounter")
 	try:
             response = self.api.task(habit)
         except:
-          return False
+            #Check if habit exists
+            if habit not in self.missing:
+                self.check_anki_habit(habit)
+            #Reset scorecount if habit is missing
+            if self.missing[habit]: 
+                self.reset_scorecounter(habit)
+            return False
         #Try to grab the scorecount and score since date
         try: 
            self.hnote[habit] = json.loads(response['notes'])
@@ -124,6 +155,7 @@ class Habitica(object):
            return False
 
     def post_scorecounter(self, habit):
+	#utils.showInfo("posting scorecounter")
 	datastring = json.dumps(self.hnote[habit])
 	#self.hrpg_showInfo(datastring)
 	data = {"notes" : datastring}
@@ -190,7 +222,7 @@ class Habitica(object):
 	#check habit if is is unchecked
         if not self.habit_checked[habit]:
 	    try:
-                #self.hrpg_tooltip("Checking Habit Score Counter")
+                self.hrpg_tooltip("Checking Habit Score Counter")
 	        self.check_anki_habit(habit)
                 self.grab_scorecounter(habit)
 	    except:
@@ -223,6 +255,10 @@ class Habitica(object):
                     #drop_text = msg['_tmp']['drop']['text']
                     #drop_type = msg['_tmp']['drop']['type']
                     drop_dialog = msg['_tmp']['drop']['dialog']
+        #Update habit if it was just created
+        if habit in self.missing and self.missing[habit]:
+            if self.check_anki_habit(habit):
+                self.missing[habit] = False
 	#try:
         #    self.post_scorecounter(habit) #update notes string of habit
         #except:

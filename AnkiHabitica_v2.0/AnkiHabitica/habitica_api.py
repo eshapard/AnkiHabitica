@@ -112,6 +112,5 @@ class HabiticaAPI(object):
         try:
             response=urllib2.urlopen('http://habitica.com', timeout=1)
             return True
-        except urllib2.URLError as err:
-            pass
-        return False
+        except:
+            return False
