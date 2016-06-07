@@ -20,6 +20,7 @@ class Habitica(object):
         self.profile = profile
         self.conffile = conffile
         self.show_popup = show_popup
+	self.sched = {} #holder for habit reward schedules
         self.name = 'Anki User'
 	self.user = None
         self.lvl = 0
@@ -132,7 +133,7 @@ class Habitica(object):
 
     def reset_scorecounter(self, habit):
         curtime = int(time.time())
-        self.hnote[habit] = {'scoresincedate' : curtime, 'scorecount': 0}
+	self.hnote[habit] = {'scoresincedate' : curtime, 'scorecount': 0, 'sched': self.sched[habit]}
 	self.habit_checked[habit] = True
 
     def grab_scorecounter(self, habit):
@@ -152,6 +153,10 @@ class Habitica(object):
            self.hnote[habit] = json.loads(response['notes'])
            if 'scoresincedate' not in self.hnote[habit] or 'scorecount' not in self.hnote[habit]:
                #reset habit score counter if both keys not found
+               self.reset_scorecounter(habit)
+           #reset if sched is different from last sched or is missing
+           # this should prevent problems caused by changing the reward schedule
+	   if 'sched' not in self.hnote[habit] or (int(self.hnote[habit]['sched']) != int(self.sched[habit])):
                self.reset_scorecounter(habit)
 	   self.habit_checked[habit] = True
            return True
