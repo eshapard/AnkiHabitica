@@ -318,6 +318,10 @@ def make_habit_progbar():
 def initialize_habitica_class():
 	settings['habitica'] = Habitica(settings['user'], settings['token'], settings['profile'], conffile, settings['show_popup'])
 	settings['initialized'] = True
+	#set sched for habit
+	# we keep track of the schedule, so if it ever changes, we reset
+	# the scorecounter and scoresincedate to prevent problems
+	settings['habitica'].sched["Anki Points"] = settings['sched']
 	thread.start_new_thread(settings['habitica'].scorecount_on_sync,())
 
 #Run various checks to see if we are ready
