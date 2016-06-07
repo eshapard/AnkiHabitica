@@ -4,7 +4,7 @@
 #Version 2.0
 #License: GNU GPL v3 <www.gnu.org/licenses/gpl.html>
 
-import urllib2, os, sys, json
+import urllib2, os, sys, json, thread
 from anki.hooks import wrap, addHook
 from aqt.reviewer import Reviewer
 from anki.sched import Scheduler
@@ -318,7 +318,7 @@ def make_habit_progbar():
 def initialize_habitica_class():
 	settings['habitica'] = Habitica(settings['user'], settings['token'], settings['profile'], conffile, settings['show_popup'])
 	settings['initialized'] = True
-	settings['habitica'].scorecount_on_sync()
+	thread.start_new_thread(settings['habitica'].scorecount_on_sync,())
 
 #Run various checks to see if we are ready
 def ready_or_not():
