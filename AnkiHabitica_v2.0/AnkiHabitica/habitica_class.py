@@ -31,7 +31,6 @@ class Habitica(object):
         self.mp = 0
 	self.mt = 0
         self.stats = {}
-        self.hrpg_attempt = 0
 	self.hnote = {}
 	self.habit_checked = {}
 	self.missing = {} #holds missing habits
@@ -68,10 +67,6 @@ class Habitica(object):
         b.setDefault(True)
 	return mb.exec_()
 
-    def hrpg_tooltip(self, text):
-        utils.tooltip(_(text), period=1500)
-
-
     def get_user_object(self):
         return self.api.user()
 
@@ -81,7 +76,7 @@ class Habitica(object):
             user = self.get_user_object()
         except:
             if not silent: self.hrpg_showInfo("Unable to log in to Habitica.\n\nCheck that you have the correct user-id and api-token in\n%s.\n\nThese should not be your username and password.\n\nPost at github.com/eshapard/AnkiHRPG if this issue persists." % (self.conffile))
-            return
+            return False
         self.name = user['profile']['name']
         self.stats = user['stats']
         self.lvl = self.stats['lvl']
@@ -92,7 +87,7 @@ class Habitica(object):
 	self.xt = self.stats['toNextLevel']
 	self.ht = self.stats['maxHealth']
 	self.mt = self.stats['maxMP']
-        return
+        return True
 
     def score_anki_points(self, habit):
         return self.api.perform_task(habit, "up")
