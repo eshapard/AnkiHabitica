@@ -1,11 +1,12 @@
 #!/usr/bin/python
 from habitica_api import HabiticaAPI
-import os, sys, json, datetime, time
+import os, sys, json, datetime, time, thread
 from aqt import *
 from aqt.main import AnkiQt
 import db_helper
 
 class Habitica(object):
+    habitlist = ["Anki Points"] #list of habits to check
     #find icon file
     iconfile = os.path.join(os.path.dirname(os.path.realpath(__file__)), "habitica_icon.png")
     avatarfile = os.path.join(os.path.dirname(os.path.realpath(__file__)), "avatar.png")
@@ -34,12 +35,22 @@ class Habitica(object):
 	self.hnote = {}
 	self.habit_checked = {}
 	self.missing = {} #holds missing habits
-	for habit in ["Anki Points"]:
+	for habit in Habitica.habitlist:
 		self.habit_checked[habit] = False
-		self.check_anki_habit(habit)
-	#Grab user object
-	if self.test_internet():
-		self.update_stats()
+		#create a thread to check the habit as to not slow down
+		#the startup process
+		thread.start_new_thread(self.check_anki_habit, (habit,))
+	#Grab user object in the background
+	thread.start_new_thread(self.init_grab_stats, ())
+
+    #Try updating stats silently on init
+    def init_grab_stats(self):
+        try:
+            self.update_stats(True)
+        except:
+            return
+
+
 
     def hrpg_showInfo(self, text):
         #display a small message window with an OK Button
@@ -64,12 +75,12 @@ class Habitica(object):
     def get_user_object(self):
         return self.api.user()
 
-    def update_stats(self):
+    def update_stats(self, silent=False):
         #self.hrpg_tooltip("Connecting to Habitica")
         try:
             user = self.get_user_object()
         except:
-            self.hrpg_showInfo("Unable to log in to Habitica.\n\nCheck that you have the correct user-id and api-token in\n%s.\n\nThese should not be your username and password.\n\nPost at github.com/eshapard/AnkiHRPG if this issue persists." % (self.conffile))
+            if not silent: self.hrpg_showInfo("Unable to log in to Habitica.\n\nCheck that you have the correct user-id and api-token in\n%s.\n\nThese should not be your username and password.\n\nPost at github.com/eshapard/AnkiHRPG if this issue persists." % (self.conffile))
             return
         self.name = user['profile']['name']
         self.stats = user['stats']
@@ -209,7 +220,7 @@ class Habitica(object):
 
         #update levels
         if new_lvl > self.lvl and self.lvl > 0:
-            self.update_stats()
+            self.update_stats(False)
         else:
             self.lvl = new_lvl
             self.xp = new_xp
@@ -219,7 +230,10 @@ class Habitica(object):
         return True
 
     def earn_points(self, habit):
-	#check habit if is is unchecked
+        #get user stats if we don't have them
+        if 'lvl' not in self.stats:
+            self.update_stats(False)
+        #check habit if is is unchecked
         if not self.habit_checked[habit]:
 	    try:
                 self.hrpg_tooltip("Checking Habit Score Counter")
@@ -259,13 +273,10 @@ class Habitica(object):
         if habit in self.missing and self.missing[habit]:
             if self.check_anki_habit(habit):
                 self.missing[habit] = False
-	#try:
-        #    self.post_scorecounter(habit) #update notes string of habit
-        #except:
-        #    pass
+
         return self.make_score_message(new_lvl, new_xp, new_mp, new_gp, new_hp, streak_bonus, crit_multiplier, drop_dialog)
 
-    #Compact Habitica Stats
+    #Compact Habitica Stats for Progress Bar
     def compact_habitica_stats(self):
     	if self.ht and self.xt and self.mt:
 		health = int( 100 * self.hp / self.ht )
