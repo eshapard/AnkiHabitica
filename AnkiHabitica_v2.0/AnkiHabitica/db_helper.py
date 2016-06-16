@@ -1,17 +1,21 @@
 #Anki Database Helper Functions
 from __future__ import division
-import datetime
+import datetime, time
 from aqt import mw
-from anki.utils import ids2str
+from anki.utils import ids2str, intTime
 
 timebox_seconds = 900 #hard-set 'timebox' length in seconds
 # having a hard-coded 'timebox' length solves the problem of
 # a user changing a timebox setting and suddenly having a ton
 # of new points.
 
+#DEPRICATED: We'll use Anki's own function for this (intTime)
+#	which is just time.time() multiplied be a scaling factor
+#	of 1000 for reviews and defaults to 1 for everything else
 #Return current local time as seconds from epoch
-def newTime():
-	return int((datetime.datetime.now() - datetime.datetime.fromtimestamp(0)).total_seconds())
+#def newTime():
+#	return int((datetime.datetime.now() - datetime.datetime.fromtimestamp(0)).total_seconds())
+
 
 # Return a formatted date string
 def prettyTime(secFromEpoch):
@@ -103,7 +107,7 @@ def decks_count(start_date):
 	dbDecks = 0
 	finishedDecks = []
 	# See how many previous days we need to check 
-	numDays = int((newTime() - start_date)/86400)+2
+	numDays = int((intTime() - start_date)/86400)+2
 	for d in mw.col.decks.all():
 		# get list of number of cards due for deck each day
 		cardsDue = [(-nDays,mw.col.db.scalar("""
