@@ -296,7 +296,7 @@ class Habitica(object):
         return self.api.test_internet()
             
     def make_score_message(self, new_lvl, new_xp, new_mp, new_gp, new_hp, streak_bonus=0, crit_multiplier=0, drop_dialog=None):
-        hrpgresponse = "Huzzah! You Get Points!\nWell Done %s!\n" % (self.name)
+        hrpgresponse = "Huzzah! You've Earned Points!\nWell Done %s!\n" % (self.name)
         #Check for increases and add to message
         if new_lvl > self.lvl:
             diff = int(new_lvl) - int(self.lvl)
@@ -320,7 +320,7 @@ class Habitica(object):
             hrpgresponse += "  +%s!" % (diff)
         #Check for drops, streaks, and critical hits
         if crit_multiplier:
-            hrpgresponse += "\nCritical Hit! Bonus: +%s%%" % (int(float(crit_multiplier)))
+            hrpgresponse += "\nCritical Hit! Bonus: +%s%%" % crit_multiplier
         if streak_bonus:
             hrpgresponse += "\nStreak Bonus! +%s" % (int(streak_bonus))   
         if drop_dialog:
@@ -365,9 +365,10 @@ class Habitica(object):
 	while i < 3 and ah.config[ah.settings.profile]['score'] >= ah.settings.sched and ah.settings.internet:
 		try:
 			msg = self.score_anki_points(habit)
-			success = True
-			self.hnote[habit]['scorecount'] += 1
-			ah.config[ah.settings.profile]['score'] -= ah.settings.sched
+			if msg['lvl']: # Make sure we really got a response
+				success = True
+				self.hnote[habit]['scorecount'] += 1
+				ah.config[ah.settings.profile]['score'] -= ah.settings.sched
 			#Collect message strings
         		if msg['_tmp']:
             			if 'streakBonus' in msg['_tmp']:
@@ -382,7 +383,7 @@ class Habitica(object):
 					if not crit_multiplier:
 						crit_multiplier = ""
 					else:
-						crit_multiplier += "\n"
+						crit_multiplier += ", "
                 			crit_multiplier += str(round((100 * msg['_tmp']['crit']), 0))
                 		if 'drop' in msg['_tmp'] and 'dialog' in msg['_tmp']['drop']:
                     			#drop happened
@@ -397,7 +398,8 @@ class Habitica(object):
 			pass
 		i += 1
 	if not success: #exit if we failed all 3 times
-			self.hrpg_showInfo("Sorry,\nI couldn't score your %s habit on Habitica.\nDon't worry, I'll remember your points and try again later." % habit)
+			self.hrpg_showInfo("Huzzah! You've earned points!\nWell done %s!\n\nSorry,\nI couldn't score your %s habit on Habitica.\nDon't worry, I'll remember your points and try again later." % (self.name, habit))
+			ah.settings.internet = False #internet failed
 			return False
 	#Post scorecounter to Habit note field
 	if Habitica.allow_post_scorecounter_thread:

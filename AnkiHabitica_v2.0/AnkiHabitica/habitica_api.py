@@ -63,7 +63,7 @@ class HabiticaAPI(object):
            req.add_header('Content-Type', 'application/json') #Important!
            req.get_method = lambda:"POST" #Needed for no-data posts
 
-        response = json.load(urllib2.urlopen(req))
+        response = json.load(urllib2.urlopen(req, timeout=5))
 
         if response['success']:
             return response['data']
