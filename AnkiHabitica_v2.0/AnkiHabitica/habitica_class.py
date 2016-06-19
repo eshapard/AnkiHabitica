@@ -167,6 +167,8 @@ class Habitica(object):
             if Habitica.debug: utils.showInfo("Habit ID Missing")
             del self.habit_id[habit]
             self.missing[habit] = True
+            if Habitica.debug: utils.showInfo("Task not found")
+            self.create_missing_habit(habit)
             return False
         #Check to see if habit Still exists
 	if Habitica.debug: utils.showInfo("Checking %s habit" % habit)
@@ -211,17 +213,19 @@ class Habitica(object):
     #Create a missing habits
     def create_missing_habit(self, habit):
         try:
-	    if not self.wait_for_reward_schedule(habit): return False
             #create habit
-	    if Habitica.debug: utils.showInfo("Trying to create %s habit" % habit)	    
-	    #create task on habitica
-            msg = self.api.create_task('habit', habit, False, False, 'int', 1, True)
+            if Habitica.debug: utils.showInfo("Trying to create %s habit" % habit)	    
+            #create task on habitica
+            curtime = intTime()
+            self.hnote[habit] = {'scoresincedate' : curtime, 'scorecount': 0, 'sched': ah.settings.sched_dict[habit]}
+            note = json.dumps(self.hnote[habit])
+            msg = self.api.create_task('habit', habit, False, note, 'int', 1, True)
             self.habit_id[habit] = str(msg['_id']) #capture new task ID
-	    if Habitica.debug: utils.showInfo("New habit created: %s" %self.habit_id[habit])
-	    if Habitica.debug: utils.showInfo(json.dumps(msg))
-	    self.reset_scorecounter(habit)
+            if Habitica.debug: utils.showInfo("New habit created: %s" %self.habit_id[habit])
+            if Habitica.debug: utils.showInfo(json.dumps(msg))
+            #self.reset_scorecounter(habit)
             self.missing[habit] = False
-	    self.habit_grabbed[habit] = True
+            self.habit_grabbed[habit] = True
         except:
             return False
 

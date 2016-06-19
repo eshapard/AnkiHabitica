@@ -39,7 +39,7 @@ class HabiticaAPI(object):
         return json.load(urllib2.urlopen(req))
 
 
-    def v3_request(self, method, path, data=None, t=5):
+    def v3_request(self, method, path, data=None, t=0):
         path = path if not path.startswith("/") else path[1:]
         path = urllib2.quote(path,'/')
         #print(path)
@@ -63,7 +63,10 @@ class HabiticaAPI(object):
            req.add_header('Content-Type', 'application/json') #Important!
            req.get_method = lambda:"POST" #Needed for no-data posts
 
-        response = json.load(urllib2.urlopen(req, None, t))
+        if t:
+            response = json.load(urllib2.urlopen(req, None, t))
+        else:
+            response = json.load(urllib2.urlopen(req))
 
         if response['success']:
             return response['data']
@@ -79,7 +82,7 @@ class HabiticaAPI(object):
     def task(self, task_id):
         return self.v3_request("get", "/tasks/%s" % str(task_id))
 
-    def create_task(self, task_type, text, date=False, note=False, attrib="rand", priority=1, up_only=False):
+    def create_task(self, task_type, text, date=None, note=None, attrib="rand", priority=1, up_only=False):
         attributes = ['str', 'int', 'con', 'per']
         if attrib == "rand" or attrib not in attributes:
            attrib = random.choice(attributes)
@@ -90,7 +93,7 @@ class HabiticaAPI(object):
             'priority': priority
         }
 	if date: data['date'] = date
-	if note: date['note'] = note
+	if note: data['notes'] = note
 	if up_only:
 		data['up'] = True
 		data['down'] = False
@@ -162,7 +165,7 @@ class HabiticaAPI(object):
         req.add_header('x-api-key', self.api_key)
         return urllib2.urlopen(req).read()
 
-    def get_api_status(self, timeout):
+    def get_api_status(self, timeout=10):
         try:
             response = self.v3_request("get", "/status", None, timeout)
         except:
@@ -181,4 +184,4 @@ class HabiticaAPI(object):
                     return str(t["_id"])
             return False
         else:
-            return 2
+            return False
