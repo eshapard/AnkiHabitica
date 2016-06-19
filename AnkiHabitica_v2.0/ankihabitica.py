@@ -12,8 +12,9 @@ from anki.sync import Syncer
 from aqt.profiles import ProfileManager
 from aqt import *
 from aqt.main import AnkiQt
-from AnkiHabitica.habitica_class import Habitica
-from AnkiHabitica import db_helper
+import AnkiHabitica
+#from AnkiHabitica.habitica_class import Habitica
+#from AnkiHabitica import db_helper
 from AnkiHabitica.ah_common import AnkiHabiticaCommon as ah
 
 class ah_settings: #tiny class for holding settings
@@ -263,8 +264,8 @@ def compare_score_to_db():
 			score_count = ah.habitica.hnote['Anki Points']['scorecount']
 			start_date = ah.habitica.hnote['Anki Points']['scoresincedate']
 		else: #We started offline and could not cotact Habitica
-			score_count = Habitica.offline_scorecount #Starts at 0
-			start_date = Habitica.offline_sincedate #start time of program
+			score_count = AnkiHabitica.habitica_class.Habitica.offline_scorecount #Starts at 0
+			start_date = AnkiHabitica.habitica_class.Habitica.offline_sincedate #start time of program
 		scored_points = int(score_count * ah.settings.sched)
 		dbscore = calculate_db_score(start_date)
 		newscore = dbscore - scored_points
@@ -278,12 +279,12 @@ def compare_score_to_db():
 
 #Calculate score from database
 def calculate_db_score(start_date):
-	dbcorrect = int(db_helper.correct_answer_count(start_date))
-	dbwrong = int(db_helper.wrong_answer_count(start_date) / ah.settings.tries_eq)
-	dbtimebox = int(db_helper.timebox_count(start_date) * ah.settings.timeboxpoints)
-	dbdecks = int(db_helper.decks_count(start_date) * ah.settings.deckpoints)
-	dblearned = int(db_helper.learned_count(start_date) / ah.settings.learned_eq)
-	dbmatured = int(db_helper.matured_count(start_date) / ah.settings.matured_eq)
+	dbcorrect = int(AnkiHabitica.db_helper.correct_answer_count(start_date))
+	dbwrong = int(AnkiHabitica.db_helper.wrong_answer_count(start_date) / ah.settings.tries_eq)
+	dbtimebox = int(AnkiHabitica.db_helper.timebox_count(start_date) * ah.settings.timeboxpoints)
+	dbdecks = int(AnkiHabitica.db_helper.decks_count(start_date) * ah.settings.deckpoints)
+	dblearned = int(AnkiHabitica.db_helper.learned_count(start_date) / ah.settings.learned_eq)
+	dbmatured = int(AnkiHabitica.db_helper.matured_count(start_date) / ah.settings.matured_eq)
 	dbscore = dbcorrect + dbwrong + dbtimebox + dbdecks + dblearned + dbmatured	
 	#utils.tooltip(_("%s\ndatabase says we have %s\nrecord shows we have %s\nscore: %s" % (start_date, dbscore, temp, ah.config[ah.settings.profile]['score'])), 2000)
 	if dbscore < 0: dbscore = 0 #sanity check
@@ -341,7 +342,7 @@ def initialize_habitica_class():
 	for habit in ah.settings.habitlist:
 		ah.settings.sched_dict[habit] = ah.settings.sched
 	#INITIALIZE HABITICA CLASS
-	ah.habitica = Habitica()
+	ah.habitica = AnkiHabitica.habitica_class.Habitica()
 	ah.settings.initialized = True
 	# Keep track of the reward schedule, so if it ever changes, we reset
 	# the scorecounter and scoresincedate to prevent problems
@@ -401,8 +402,8 @@ def ready_or_not():
 		#If we don't have any habits grabbed, attempt to grab them
 		if ah.settings.debug: utils.showInfo("Hnote length: %s" % len(ah.habitica.hnote))
 		if len(ah.habitica.hnote) == 0:
-			Habitica.offline_recover_attempt += 1
-			if Habitica.offline_recover_attempt % 3 == 0:
+			AnkiHabitica.habitica_class.Habitica.offline_recover_attempt += 1
+			if AnkiHabitica.habitica_class.Habitica.offline_recover_attempt % 3 == 0:
 				if ah.settings.debug: utils.showInfo("Trying to grab habits")
 				ah.habitica.init_update()
 		return True
@@ -510,7 +511,7 @@ mw.form.menuTools.addAction(action)
 #	Sometimes it comes down malformed.
 def refresh_habitica_avatar():
 	if ah.settings.initialized and ah.settings.internet:
-		if Habitica.allow_threads:
+		if AnkiHabitica.habitica_class.Habitica.allow_threads:
 			thread.start_new_thread(ah.habitica.save_avatar, ())
 		else:
 			ah.habitica.save_avatar()
