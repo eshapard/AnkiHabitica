@@ -39,7 +39,7 @@ class HabiticaAPI(object):
         return json.load(urllib2.urlopen(req))
 
 
-    def v3_request(self, method, path, data=None):
+    def v3_request(self, method, path, data=None, t=5):
         path = path if not path.startswith("/") else path[1:]
         path = urllib2.quote(path,'/')
         #print(path)
@@ -63,7 +63,7 @@ class HabiticaAPI(object):
            req.add_header('Content-Type', 'application/json') #Important!
            req.get_method = lambda:"POST" #Needed for no-data posts
 
-        response = json.load(urllib2.urlopen(req, timeout=5))
+        response = json.load(urllib2.urlopen(req, None, t))
 
         if response['success']:
             return response['data']
@@ -147,7 +147,7 @@ class HabiticaAPI(object):
         return self.v3_request("post", "/content")
 
     def test_internet(self):
-        return self.get_api_status() #Checking the status of the api is more accurate
+        return self.get_api_status(2) #Checking the status of the api is more accurate
 #        try:
 #            response=urllib2.urlopen('http://habitica.com', timeout=1)
 #            return True
@@ -162,9 +162,9 @@ class HabiticaAPI(object):
         req.add_header('x-api-key', self.api_key)
         return urllib2.urlopen(req).read()
 
-    def get_api_status(self):
+    def get_api_status(self, timeout):
         try:
-            response = self.v3_request("get", "/status")
+            response = self.v3_request("get", "/status", None, timeout)
         except:
             return False
         if 'status' in response and response['status'] == 'up':
