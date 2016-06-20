@@ -24,7 +24,7 @@ class ah_settings: #tiny class for holding settings
 	#      Anki Habitica scores the 'Anki Points' habit.
 	
 	############### YOU MAY EDIT THESE SETTINGS ###############
-	sched = 10 #score habitica for this many points
+	sched = 12 #score habitica for this many points
 	step = 1 #this is how many points each tick of the progress bar represents
 	tries_eq = 2 #this many wrong answers gives us one point
 	barcolor = '#603960' #progress bar highlight color
@@ -54,6 +54,7 @@ def reset_ah_settings():
 	ah.settings.initialized = False #If habitica class is initialized
 	ah.settings.token = None #Holder for current profile api-token
 	ah.settings.user = None #Holder for current profile user-id
+	ah.settings.progbar = ""
 
 #Set these settings on initial run
 ah.settings.threshold = int(0.8 * ah.settings.sched)
@@ -413,7 +414,7 @@ def ready_or_not():
 
 
 #Process Habitica Points in real time
-def hrpg_realtime():
+def hrpg_realtime(dummy=None):
 	crit_multiplier = 0
 	streak_multiplier = 0
 	drop_text = ""
@@ -421,6 +422,13 @@ def hrpg_realtime():
 
 	#Check if we are ready; exit if not
 	if not ready_or_not(): return False
+
+	#Compare score to database an make score progbar
+	if compare_score_to_db():
+		ah.settings.hrpg_progbar = make_habit_progbar()
+	else:
+		ah.settings.hrpg_progbar = ""
+
 
 	#Post to Habitica if we just crossed a sched boundary
 	#  because it's possible to earn multiple points at a time,
@@ -557,19 +565,20 @@ addHook("profileLoaded", grab_profile)
 #addHook("sync", ahsync)
 addHook("unloadProfile", save_stats)
 #AnkiQt.closeEvent = wrap(AnkiQt.closeEvent, save_stats, "before")
+Reviewer.nextCard = wrap(Reviewer.nextCard, hrpg_realtime, "before")
 
 #Insert progress bar into bottom review stats
 #       along with database scoring and realtime habitica routines
 orig_remaining = Reviewer._remaining
 def my_remaining(x):
 	ret = orig_remaining(x)
-	if compare_score_to_db():
-		hrpg_progbar = make_habit_progbar()
-		hrpg_realtime()
-		if not hrpg_progbar == "":
-			ret += " : %s" % (hrpg_progbar)
-		if ah.settings.initialized and ah.settings.show_mini_stats:
-			mini_stats = ah.habitica.compact_habitica_stats()
-			if mini_stats: ret += " : %s" % (mini_stats)
+	#if compare_score_to_db():
+	#hrpg_progbar = make_habit_progbar()
+	#hrpg_realtime()
+	if not ah.settings.hrpg_progbar == "":
+		ret += " : %s" % (ah.settings.hrpg_progbar)
+	if ah.settings.initialized and ah.settings.show_mini_stats:
+		mini_stats = ah.habitica.compact_habitica_stats()
+		if mini_stats: ret += " : %s" % (mini_stats)
 	return ret
 Reviewer._remaining = my_remaining
