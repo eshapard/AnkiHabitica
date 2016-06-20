@@ -3,6 +3,7 @@ from habitica_api import HabiticaAPI
 import os, sys, json, datetime, time, thread
 from aqt import *
 from aqt.main import AnkiQt
+from anki.hooks import runHook
 import db_helper
 from anki.utils import intTime
 from ah_common import AnkiHabiticaCommon as ah
@@ -344,6 +345,7 @@ class Habitica(object):
             self.mp = new_mp
             self.gp = new_gp
             self.hp = new_hp
+        runHook("HabiticaAfterScore")
         return True
 
     def earn_points(self, habit):
