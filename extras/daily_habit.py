@@ -6,8 +6,14 @@ from ah_common import AnkiHabiticaCommon as ah
 from anki.hooks import addHook
 import db_helper
 
-
-#-------------Configuration Section------------------------#
+#-------------Installation Instructions--------------------#
+# Install this file in the AnkiHabitica subdirectory in your
+# Anki addons folder along with the other files from the
+# main Anki Habitica distribution.
+#
+# Be sure to edit the configuration section below.
+#
+# Configuration Section:
 
 habitName = "Anki:mahjong:" #Name of daily habit to score
 minTime = 15 #Minimum amount of time required in minutes
