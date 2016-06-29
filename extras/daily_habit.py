@@ -5,6 +5,7 @@ import thread
 from ah_common import AnkiHabiticaCommon as ah
 from anki.hooks import addHook
 import db_helper
+from aqt import *
 
 #-------------Installation Instructions--------------------#
 # Install this file in the AnkiHabitica subdirectory in your
@@ -23,9 +24,11 @@ habitID = None #empty placeholder
 minTime = minTime * 60 #set minTime to seconds
 
 #set up initial times
-midnight = datetime.datetime.combine(datetime.date.today(), datetime.time.min)
-checkTime = int(time.mktime(midnight.timetuple()))
-del midnight
+def setup_initial_times():
+    global checkTime
+    dayStartTime = datetime.datetime.fromtimestamp(mw.col.crt).time()
+    midnight = datetime.datetime.combine(datetime.date.today(), dayStartTime)
+    checkTime = int(time.mktime(midnight.timetuple()))
 
 #Mark daily as complete
 def mark_daily_complete():
@@ -46,5 +49,5 @@ def check_for_min_time():
         #Mark daily habit complete if not already
         thread.start_new_thread(mark_daily_complete, ())
 
-
+addHook("profileLoaded", setup_initial_times)
 addHook("HabiticaAfterScore", check_for_min_time)
