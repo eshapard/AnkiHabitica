@@ -24,7 +24,7 @@ minTime = minTime * 60 #set minTime to seconds
 
 #set up initial times
 midnight = datetime.datetime.combine(datetime.date.today(), datetime.time.min)
-epoch = datetime.datetime.utcfromtimestamp(0)
+epoch = datetime.datetime.fromtimestamp(0)
 checkTime = int((midnight - epoch).total_seconds())
 del midnight
 del epoch
