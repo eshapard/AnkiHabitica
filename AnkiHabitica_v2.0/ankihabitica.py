@@ -14,9 +14,10 @@ from aqt.profiles import ProfileManager
 from aqt import *
 from aqt.main import AnkiQt
 import AnkiHabitica
+# import logging, AnkiHabitica.logging.handlers
 #from AnkiHabitica.habitica_class import Habitica
 #from AnkiHabitica import db_helper
-from AnkiHabitica.ah_common import AnkiHabiticaCommon as ah
+from AnkiHabitica.ah_common import AnkiHabiticaCommon as ah, setupLog
 
 class ah_settings: #tiny class for holding settings
     ### Reward Schedule and Settings - YOU MAY EDIT THESE
@@ -42,8 +43,12 @@ class ah_settings: #tiny class for holding settings
 
 ### NOTHING FOR USERS TO EDIT below this point ####
 ah.settings = ah_settings #monkey patch settings to commonly shared class
-ah.settings.debug = False
+ah.settings.debug = True
 ah.settings.allow_threads = True #No threads yet in this file, so it doesn't matter habitica_class.py has its own setting to allow threads.
+
+#Setup logging
+setupLog(ah)
+ah.log.debug('Logfile initialized')
 
 #list of habits used
 ah.settings.habitlist = ["Anki Points"]
