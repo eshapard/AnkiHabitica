@@ -43,7 +43,7 @@ class ah_settings: #tiny class for holding settings
 
 ### NOTHING FOR USERS TO EDIT below this point ####
 ah.settings = ah_settings #monkey patch settings to commonly shared class
-ah.settings.debug = True
+ah.settings.debug = False
 ah.settings.allow_threads = True #No threads yet in this file, so it doesn't matter habitica_class.py has its own setting to allow threads.
 
 #Setup logging
