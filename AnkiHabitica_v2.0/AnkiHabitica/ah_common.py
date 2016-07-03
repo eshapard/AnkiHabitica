@@ -39,7 +39,7 @@ def setupLog(ah):
 	        
 	    logName = os.path.join(os.path.dirname(os.path.realpath(__file__)), "AnkiHabitica.log")
 	    fh = logging.handlers.RotatingFileHandler(logName, maxBytes=1e6, backupCount=5)
-	    fmt = logging.Formatter('%(asctime)s [%(threadName)s:%(filename)s:%(lineno)s - %(funcName)20s()] %(levelname)s: %(message)s')
+	    fmt = logging.Formatter('%(asctime)s [%(threadName)14s:%(filename)18s:%(lineno)5s - %(funcName)30s()] %(levelname)8s: %(message)s')
 	    fh.setFormatter(fmt)
 	    ah.log.addHandler(fh)
 

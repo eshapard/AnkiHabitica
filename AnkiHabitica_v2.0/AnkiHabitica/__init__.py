@@ -1,5 +1,6 @@
-#Blank File, allows including this subdirectory
+#This File allows including this subdirectory
 import os
+#import all .py files in this subdirectory
 for module in os.listdir(os.path.dirname(__file__)):
     if module == '__init__.py' or module[-3:] != '.py':
         continue
