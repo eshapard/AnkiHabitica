@@ -360,6 +360,7 @@ class Habitica(object):
             return False
         #if Habitica.debug: utils.showInfo("Habit Grabbed")
         ah.log.debug("Habit Grabbed")
+        ah.log.debug("Habit note: %s" % self.hnote[habit])
         self.habit_grabbed[habit] = True
         ah.log.debug("End function returning: %s" %  True)
         return True
@@ -369,7 +370,7 @@ class Habitica(object):
         try:
             habitID = self.habit_id[habit]
             #if Habitica.debug: utils.showInfo("posting scorecounter")
-            ah.log.debug("posting scorecounter")
+            ah.log.debug("posting scorecounter: %s" % self.hnote[habit])
             datastring = json.dumps(self.hnote[habit])
             #self.hrpg_showInfo(datastring)
             data = {"notes" : datastring}

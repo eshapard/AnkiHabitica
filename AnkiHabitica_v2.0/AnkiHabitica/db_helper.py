@@ -196,3 +196,11 @@ def decks_count(start_date):
             
     ah.log.debug("End function returning: %s" %  dbDecks)
     return dbDecks
+
+#return the time (seconds since epoch) of the most recent review in the database
+def latest_review_time():
+    ah.log.debug("Begin function")
+    out = mw.col.db.scalar("select max(id/1000) from revlog")
+    if out is None: out = intTime()
+    ah.log.debug("End function returning: %s" %  out)
+    return out

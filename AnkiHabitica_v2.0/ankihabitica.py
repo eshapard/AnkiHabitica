@@ -13,11 +13,13 @@ from anki.sync import Syncer
 from aqt.profiles import ProfileManager
 from aqt import *
 from aqt.main import AnkiQt
+from anki.utils import intTime
 import AnkiHabitica
 # import logging, AnkiHabitica.logging.handlers
 #from AnkiHabitica.habitica_class import Habitica
 #from AnkiHabitica import db_helper
 from AnkiHabitica.ah_common import AnkiHabiticaCommon as ah, setupLog
+from httplib import FOUND
 
 class ah_settings: #tiny class for holding settings
     ### Reward Schedule and Settings - YOU MAY EDIT THESE
@@ -26,7 +28,7 @@ class ah_settings: #tiny class for holding settings
     #      Anki Habitica scores the 'Anki Points' habit.
     
     ############### YOU MAY EDIT THESE SETTINGS ###############
-    sched = 12                  #score habitica for this many points
+    sched = 12                  #score habitica when this number of points is reached
     step = 1                    #this is how many points each tick of the progress bar represents
     tries_eq = 2                #this many wrong answers gives us one point
     barcolor = '#603960'        #progress bar highlight color
@@ -37,14 +39,14 @@ class ah_settings: #tiny class for holding settings
     deckpoints = 10             #points earned for clearing a deck
     show_mini_stats = True      #Show Habitica HP, XP, and MP %s next to prog bar
     show_popup = True           #show a popup window when you score points.
-    check_db_on_profile_load = True #check Anki database on profile load to see if there are unsynced reviews and ask to sync if there are
+    check_db_on_profile_load = True #check Anki database on profile load to see if there are unsynced reviews and sync if there are
     ############# END USER CONFIGURABLE SETTINGS #############
 
 
 
 ### NOTHING FOR USERS TO EDIT below this point ####
 ah.settings = ah_settings #monkey patch settings to commonly shared class
-ah.settings.debug = False
+ah.settings.debug = True
 ah.settings.allow_threads = True #No threads yet in this file, so it doesn't matter habitica_class.py has its own setting to allow threads.
 
 # Setup logging
@@ -332,15 +334,33 @@ def compare_score_to_db():
         if 'Anki Points' in ah.habitica.hnote and ah.habitica.hnote['Anki Points']['scoresincedate']:
             score_count = ah.habitica.hnote['Anki Points']['scorecount']
             start_date = ah.habitica.hnote['Anki Points']['scoresincedate']
+            ah.log.debug("From Habitica note. Score count: %s, Start date: %s" % (score_count, start_date))
         else: #We started offline and could not cotact Habitica
             score_count = AnkiHabitica.habitica_class.Habitica.offline_scorecount #Starts at 0
             start_date = AnkiHabitica.habitica_class.Habitica.offline_sincedate #start time of program
+            ah.log.debug("Offline. Score count: %s, Start date: %s" % (score_count, start_date))
         scored_points = int(score_count * ah.settings.sched)
+        ah.log.debug("Scored points: %s" % scored_points)
         dbscore = calculate_db_score(start_date)
+        ah.log.debug("Database score: %s" % dbscore)
         newscore = dbscore - scored_points
         if newscore < 0: newscore = 0 #sanity check
         ah.config[ah.settings.profile]['oldscore'] = ah.config[ah.settings.profile]['score'] # Capture old score
         ah.config[ah.settings.profile]['score'] = newscore
+        ah.log.debug("Old score: %s" % ah.config[ah.settings.profile]['oldscore'])
+        ah.log.debug("New score: %s" % newscore)
+        
+#         new_date = AnkiHabitica.db_helper.latest_review_time()
+#         if 'Anki Points' in ah.habitica.hnote and ah.habitica.hnote['Anki Points']['scoresincedate']:
+#             ah.habitica.hnote['Anki Points']['scoresincedate'] = new_date
+#             ah.habitica.hnote['Anki Points']['scorecount'] = newscore
+#             ah.habitica.hnote['Anki Points']['sched'] = ah.settings.sched
+#             ah.habitica.post_scorecounter('Anki Points')
+#         else:
+#             AnkiHabitica.habitica_class.Habitica.offline_sincedate = new_date
+#             AnkiHabitica.habitica_class.Habitica.offline_scorecount = newscore
+#         ah.log.debug("New date: %s" % new_date)
+        
 #        if ah.settings.debug: utils.showInfo("compare score: success")
         ah.log.info("compare score: success")
         ah.log.debug("End function returning: %s" %  True)
@@ -668,12 +688,21 @@ def grab_profile():
         ah.log.info("adding %s to config dict" % ah.settings.profile)
     ready_or_not()
     if ah.settings.check_db_on_profile_load and compare_score_to_db():
-        ah.log.debug("%s point(s) earned of %s required" % (ah.config[ah.settings.profile]['score'], ah.settings.sched))
-        if ah.config[ah.settings.profile]['score'] >= ah.settings.sched:
-            ah.log.debug("Asking user to sync backlog.")
-            if utils.askUser('New reviews found. Sync with Habitica now?'):
-                ah.log.debug('Syncing backlog')
-                score_backlog(True)
+#         TODO: the idea was to check the db (fast) then then ask the user if they wanted to sync iwth Habitica (slow), but
+#                there's an issue whree ['score'] shows a different value after the above call to compare_score_to_db() then 
+#                what is shwon when score_backlog() is called. This discrepency is easy to see in the log:
+#                1. do some reviews on another device and then sync
+#                2. open anki and load profile. the log will show that 0 scores have been found
+#                3. immediately sync backlog and see in log that more than 0 are there.
+#                So, I'm just running score_backlog() either way.
+                
+#         ah.log.debug("%s point(s) earned of %s required" % (ah.config[ah.settings.profile]['score'], ah.settings.sched))
+#         if ah.config[ah.settings.profile]['score'] >= ah.settings.sched or ah.config[ah.settings.profile]['oldscore'] >= ah.settings.sched:
+#             ah.log.debug("Asking user to sync backlog.")
+#             if utils.askUser('New reviews found. Sync with Habitica now?'):
+#                 ah.log.debug('Syncing backlog')
+#                 score_backlog(True)
+        score_backlog(True)
     ah.log.debug("End function")
 
 #############
