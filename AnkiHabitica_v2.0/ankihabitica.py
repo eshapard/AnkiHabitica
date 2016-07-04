@@ -46,7 +46,12 @@ ah.settings = ah_settings #monkey patch settings to commonly shared class
 ah.settings.debug = False
 ah.settings.allow_threads = True #No threads yet in this file, so it doesn't matter habitica_class.py has its own setting to allow threads.
 
-#Setup logging
+# Setup logging
+# The log file is saved in the AnkiHabitica subfolder of the Anki add-ons folder.
+# A log file will grow to 1MB, at which point it will be rotated.
+# There can be as many as 5 log files, each 1MB, before old files will be removed.
+# The log file will be made regardless of logging being enabled, but its size will be
+# null unless logging is enabled. 
 setupLog(ah)
 ah.log.info('Logfile initialized')
 
