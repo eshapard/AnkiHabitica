@@ -26,17 +26,18 @@ class ah_settings: #tiny class for holding settings
     #      Anki Habitica scores the 'Anki Points' habit.
     
     ############### YOU MAY EDIT THESE SETTINGS ###############
-    sched = 12 #score habitica for this many points
-    step = 1 #this is how many points each tick of the progress bar represents
-    tries_eq = 2 #this many wrong answers gives us one point
-    barcolor = '#603960' #progress bar highlight color
-    barbgcolor = '#BFBFBF' #progress bar background color
-    timeboxpoints = 1 #points earned for each 15 min 'timebox'
-    matured_eq = 2 #this many matured cards gives us one point
-    learned_eq = 2 #this many newly learned cards gives us one point
-    deckpoints = 10 #points earned for clearing a deck
-    show_mini_stats = True #Show Habitica HP, XP, and MP %s next to prog bar
-    show_popup = True #show a popup window when you score points.
+    sched = 12                  #score habitica for this many points
+    step = 1                    #this is how many points each tick of the progress bar represents
+    tries_eq = 2                #this many wrong answers gives us one point
+    barcolor = '#603960'        #progress bar highlight color
+    barbgcolor = '#BFBFBF'      #progress bar background color
+    timeboxpoints = 1           #points earned for each 15 min 'timebox'
+    matured_eq = 2              #this many matured cards gives us one point
+    learned_eq = 2              #this many newly learned cards gives us one point
+    deckpoints = 10             #points earned for clearing a deck
+    show_mini_stats = True      #Show Habitica HP, XP, and MP %s next to prog bar
+    show_popup = True           #show a popup window when you score points.
+    check_db_on_profile_load = True #check Anki database on profile load to see if there are unsynced reviews and ask to sync if there are
     ############# END USER CONFIGURABLE SETTINGS #############
 
 
@@ -666,6 +667,13 @@ def grab_profile():
 #        if ah.settings.debug: utils.showInfo("adding %s to config dict" % ah.settings.profile)
         ah.log.info("adding %s to config dict" % ah.settings.profile)
     ready_or_not()
+    if ah.settings.check_db_on_profile_load and compare_score_to_db():
+        ah.log.debug("%s point(s) earned of %s required" % (ah.config[ah.settings.profile]['score'], ah.settings.sched))
+        if ah.config[ah.settings.profile]['score'] >= ah.settings.sched:
+            ah.log.debug("Asking user to sync backlog.")
+            if utils.askUser('New reviews found. Sync with Habitica now?'):
+                ah.log.debug('Syncing backlog')
+                score_backlog(True)
     ah.log.debug("End function")
 
 #############
