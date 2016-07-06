@@ -25,22 +25,27 @@ minTime = minTime * 60 #set minTime to seconds
 
 #set up initial times
 def setup_initial_times():
+    ah.log.debug("Begin function")
     global checkTime
     dayStartTime = datetime.datetime.fromtimestamp(mw.col.crt).time()
     midnight = datetime.datetime.combine(datetime.date.today(), dayStartTime)
     checkTime = int(time.mktime(midnight.timetuple()))
+    ah.log.debug("End function")
 
 #Mark daily as complete
 def mark_daily_complete():
+    ah.log.debug("Begin function")
     global checkTime, habitID
     if not habitID:
         habitID = ah.habitica.api.find_habit_id(habitName)
     if habitID:
         if ah.habitica.api.perform_task(habitID, "up"):
             checkTime = checkTime + (24 * 60 * 60)
+    ah.log.debug("End function")
 
 #Check to see if we have met minimum time requirements
 def check_for_min_time():
+    ah.log.debug("Begin function")
     #return if checkTime is scheduled for later
     if int(time.time()) < checkTime:
         return
@@ -48,6 +53,7 @@ def check_for_min_time():
     if timeToday >= minTime:
         #Mark daily habit complete if not already
         thread.start_new_thread(mark_daily_complete, ())
+    ah.log.debug("End function")
 
 addHook("profileLoaded", setup_initial_times)
 addHook("HabiticaAfterScore", check_for_min_time)

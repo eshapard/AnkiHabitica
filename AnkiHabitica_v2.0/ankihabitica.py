@@ -644,6 +644,7 @@ def score_backlog(silent=False):
         ah.log.info("%s point%s scored on Habitica" % (p, "" if p == 1 else "s"))
 #        if ah.settings.debug: utils.showInfo("New scorecount: %s" % ah.habitica.hnote['Anki Points']['scorecount'])
         ah.log.info("New scorecount: %s" % ah.habitica.hnote['Anki Points']['scorecount'])
+        runHook("HabiticaAfterScore")
         save_stats(None, None)
     ah.log.debug("End function")
 
