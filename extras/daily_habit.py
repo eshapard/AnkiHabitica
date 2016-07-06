@@ -16,12 +16,12 @@ from aqt import *
 #
 # Configuration Section:
 
-habitName = "Anki:mahjong:" #Name of daily habit to score
-minTime = 15 #Minimum amount of time required in minutes
+habitName = "Anki (30 minutes)" #Name of daily habit to score
+minTime = 5 #Minimum amount of time required in minutes
 
 #-------------Do not edit below----------------------------#
 habitID = None #empty placeholder
-minTime = minTime * 60 #set minTime to seconds
+minTime *= 60 #set minTime to seconds
 
 #set up initial times
 def setup_initial_times():
@@ -43,14 +43,23 @@ def mark_daily_complete():
             checkTime = checkTime + (24 * 60 * 60)
     ah.log.debug("End function")
 
+def minutes_seconds(NumSecs):
+    ah.log.debug("Begin function")
+    out = str(NumSecs // 60) + ':' + str(NumSecs % 60)
+    ah.log.debug("End function returning: %s" % out)
+    return out
+
 #Check to see if we have met minimum time requirements
 def check_for_min_time():
     ah.log.debug("Begin function")
     #return if checkTime is scheduled for later
     if int(time.time()) < checkTime:
+        ah.log.debug("End function")
         return
     timeToday = db_helper.seconds_count(checkTime)
+    ah.log.debug("Studied for %s, Need %s to check off daily" % (minutes_seconds(timeToday), minutes_seconds(minTime)))
     if timeToday >= minTime:
+        ah.log.debug("Daily Anki study time reached, checking off daily!")
         #Mark daily habit complete if not already
         thread.start_new_thread(mark_daily_complete, ())
     ah.log.debug("End function")

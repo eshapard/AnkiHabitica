@@ -19,7 +19,6 @@ import AnkiHabitica
 #from AnkiHabitica.habitica_class import Habitica
 #from AnkiHabitica import db_helper
 from AnkiHabitica.ah_common import AnkiHabiticaCommon as ah, setupLog
-from httplib import FOUND
 
 class ah_settings: #tiny class for holding settings
     ### Reward Schedule and Settings - YOU MAY EDIT THESE
@@ -590,7 +589,7 @@ def hrpg_realtime(dummy=None):
 def score_backlog(silent=False):
     ah.log.debug("Begin function")
     #Warn User that this can take some time
-    warning = "Warning: Scoring backlog may take some time.\n\nWould you like to continue?"
+    warning = "Warning: Scoring backlog may take some time.\n\nMake sure Anki is synced across your devices before you do this. If you do this and you have unsynced reviews on anohter device, those reviews will not be counted towards Habitica points!\n\nWould you like to continue?"
     if not silent:
         ah.log.debug(warning.replace('\n', ' '))
         cont = utils.askUser(warning)
@@ -615,6 +614,9 @@ def score_backlog(silent=False):
         ah.log.warning("No internet connection")
         ah.log.warning("End function returning: %s" %  False)
         return False
+    
+    ah.habitica.grab_scorecounter('Anki Points')
+    
     #Compare database to scored points
     if compare_score_to_db():
         if ah.config[ah.settings.profile]['score'] < ah.settings.sched:
@@ -644,6 +646,10 @@ def score_backlog(silent=False):
         ah.log.info("%s point%s scored on Habitica" % (p, "" if p == 1 else "s"))
 #        if ah.settings.debug: utils.showInfo("New scorecount: %s" % ah.habitica.hnote['Anki Points']['scorecount'])
         ah.log.info("New scorecount: %s" % ah.habitica.hnote['Anki Points']['scorecount'])
+        ah.habitica.hnote['Anki Points']['scorecount'] = AnkiHabitica.habitica_class.Habitica.offline_scorecount = 0
+        ah.habitica.hnote['Anki Points']['scoresincedate'] = AnkiHabitica.habitica_class.Habitica.offline_sincedate = AnkiHabitica.db_helper.latest_review_time()
+        ah.config[ah.settings.profile]['score'] = ah.habitica.hnote['Anki Points']['scoresincedate']
+        ah.habitica.post_scorecounter('Anki Points')
         runHook("HabiticaAfterScore")
         save_stats(None, None)
     ah.log.debug("End function")
@@ -688,7 +694,7 @@ def grab_profile():
 #        if ah.settings.debug: utils.showInfo("adding %s to config dict" % ah.settings.profile)
         ah.log.info("adding %s to config dict" % ah.settings.profile)
     ready_or_not()
-    if ah.settings.check_db_on_profile_load and compare_score_to_db():
+    if ah.settings.check_db_on_profile_load and ah.habitica.grab_scorecounter('Anki Points') and compare_score_to_db():
 #         TODO: the idea was to check the db (fast) then then ask the user if they wanted to sync iwth Habitica (slow), but
 #                there's an issue whree ['score'] shows a different value after the above call to compare_score_to_db() then 
 #                what is shwon when score_backlog() is called. This discrepency is easy to see in the log:
@@ -697,13 +703,13 @@ def grab_profile():
 #                3. immediately sync backlog and see in log that more than 0 are there.
 #                So, I'm just running score_backlog() either way.
                 
-#         ah.log.debug("%s point(s) earned of %s required" % (ah.config[ah.settings.profile]['score'], ah.settings.sched))
-#         if ah.config[ah.settings.profile]['score'] >= ah.settings.sched or ah.config[ah.settings.profile]['oldscore'] >= ah.settings.sched:
-#             ah.log.debug("Asking user to sync backlog.")
-#             if utils.askUser('New reviews found. Sync with Habitica now?'):
-#                 ah.log.debug('Syncing backlog')
-#                 score_backlog(True)
-        score_backlog(True)
+        ah.log.debug("%s point(s) earned of %s required" % (ah.config[ah.settings.profile]['score'], ah.settings.sched))
+        if ah.config[ah.settings.profile]['score'] >= ah.settings.sched or ah.config[ah.settings.profile]['oldscore'] >= ah.settings.sched:
+            ah.log.debug("Asking user to sync backlog.")
+            if utils.askUser('New reviews found. Sync with Habitica now?\n\nWARNING: Make sure Anki is synced across your devices before you do this. If you do this and you have unsynced reviews on anohter device, those reviews will not be counted towards Habitica points!'):
+                ah.log.debug('Syncing backlog')
+                score_backlog(True)
+#         score_backlog(True)
     ah.log.debug("End function")
 
 #############

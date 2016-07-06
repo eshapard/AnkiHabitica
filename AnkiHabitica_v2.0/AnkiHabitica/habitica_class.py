@@ -11,7 +11,7 @@ from ah_common import AnkiHabiticaCommon as ah
 #TODO: make sure script can survive internet outages.
 
 class Habitica(object):
-    debug = False
+#     debug = False
     allow_threads = True #startup config processes checking habits, etc.
     allow_post_scorecounter_thread = True #Maybe a source of database warnings?
     #find icon file
@@ -292,10 +292,10 @@ class Habitica(object):
     	ah.log.debug("Begin function")
         #if Habitica.debug: utils.showInfo("Resetting Scorecounter")
         ah.log.debug("Resetting Scorecounter")
-        curtime = intTime()
-        #if Habitica.debug: utils.showInfo(str(curtime))
-        ah.log.debug(str(curtime))
-        self.hnote[habit] = {'scoresincedate' : curtime, 'scorecount': 0, 'sched': ah.settings.sched_dict[habit]}
+        last_review_time = db_helper.latest_review_time()
+        #if Habitica.debug: utils.showInfo(str(last_review_time))
+        ah.log.debug(str(last_review_time))
+        self.hnote[habit] = {'scoresincedate' : last_review_time, 'scorecount': 0, 'sched': ah.settings.sched_dict[habit]}
         self.habit_grabbed[habit] = True
         #if Habitica.debug: utils.showInfo("reset: %s" % json.dumps(self.hnote[habit]))
         ah.log.debug("reset: %s" % json.dumps(self.hnote[habit]))
