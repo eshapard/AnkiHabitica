@@ -16,8 +16,8 @@ from aqt import *
 #
 # Configuration Section:
 
-habitName = "Anki (30 minutes)" #Name of daily habit to score
-minTime = 5 #Minimum amount of time required in minutes
+minTime = 30 #Minimum amount of time required in minutes
+habitName = "Anki (%s minute%s)" % (minTime, "" if minTime == 1 else "s") #Name of daily habit to score, default to "Anki (minTime minutes)"
 
 #-------------Do not edit below----------------------------#
 habitID = None #empty placeholder
