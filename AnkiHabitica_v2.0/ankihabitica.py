@@ -17,7 +17,7 @@ from anki.utils import intTime
 import AnkiHabitica
 # import logging, AnkiHabitica.logging.handlers
 #from AnkiHabitica.habitica_class import Habitica
-#from AnkiHabitica import db_helper
+from AnkiHabitica import db_helper
 from AnkiHabitica.ah_common import AnkiHabiticaCommon as ah, setupLog
 
 class ah_settings: #tiny class for holding settings
@@ -333,11 +333,11 @@ def compare_score_to_db():
         if 'Anki Points' in ah.habitica.hnote and ah.habitica.hnote['Anki Points']['scoresincedate']:
             score_count = ah.habitica.hnote['Anki Points']['scorecount']
             start_date = ah.habitica.hnote['Anki Points']['scoresincedate']
-            ah.log.debug("From Habitica note. Score count: %s, Start date: %s" % (score_count, start_date))
+            ah.log.debug("From Habitica note. Score count: %s, Start date: %s (%s)" % (score_count, start_date, db_helper.prettyTime(start_date)))
         else: #We started offline and could not cotact Habitica
             score_count = AnkiHabitica.habitica_class.Habitica.offline_scorecount #Starts at 0
             start_date = AnkiHabitica.habitica_class.Habitica.offline_sincedate #start time of program
-            ah.log.debug("Offline. Score count: %s, Start date: %s" % (score_count, start_date))
+            ah.log.debug("Offline. Score count: %s, Start date: %s (%s)" % (score_count, start_date, db_helper.prettyTime(start_date)))
         scored_points = int(score_count * ah.settings.sched)
         ah.log.debug("Scored points: %s" % scored_points)
         dbscore = calculate_db_score(start_date)
@@ -380,6 +380,7 @@ def calculate_db_score(start_date):
     dbmatured = int(AnkiHabitica.db_helper.matured_count(start_date) / ah.settings.matured_eq)
     dbscore = dbcorrect + dbwrong + dbtimebox + dbdecks + dblearned + dbmatured    
     #utils.tooltip(_("%s\ndatabase says we have %s\nrecord shows we have %s\nscore: %s" % (start_date, dbscore, temp, ah.config[ah.settings.profile]['score'])), 2000)
+#     ah.log.debug("%s: database says we have %s, record shows we have %s, score: %s" % (start_date, dbscore, temp, ah.config[ah.settings.profile]['score']))
     if dbscore < 0: dbscore = 0 #sanity check
     ah.log.debug("End function returning: %s" %  dbscore)
     return dbscore
@@ -393,6 +394,7 @@ def calculate_db_score(start_date):
 def make_habit_progbar():
     ah.log.debug("Begin function")
     cur_score = ah.config[ah.settings.profile]['score']
+    ah.log.debug("Current score for progress bar: %s out of %s" % (cur_score, ah.settings.sched))
     if not ah.settings.configured:
         configure_ankihabitica()
     #length of progress bar excluding increased rate after threshold
@@ -646,6 +648,7 @@ def score_backlog(silent=False):
         ah.log.info("%s point%s scored on Habitica" % (p, "" if p == 1 else "s"))
 #        if ah.settings.debug: utils.showInfo("New scorecount: %s" % ah.habitica.hnote['Anki Points']['scorecount'])
         ah.log.info("New scorecount: %s" % ah.habitica.hnote['Anki Points']['scorecount'])
+        ah.log.info("New config score: %s" % ah.config[ah.settings.profile]['score'])
         ah.habitica.hnote['Anki Points']['scorecount'] = AnkiHabitica.habitica_class.Habitica.offline_scorecount = 0
         ah.habitica.hnote['Anki Points']['scoresincedate'] = AnkiHabitica.habitica_class.Habitica.offline_sincedate = AnkiHabitica.db_helper.latest_review_time()
         ah.config[ah.settings.profile]['score'] = ah.habitica.hnote['Anki Points']['scoresincedate']

@@ -202,5 +202,5 @@ def latest_review_time():
     ah.log.debug("Begin function")
     out = mw.col.db.scalar("select max(id/1000) from revlog")
     if out is None: out = intTime()
-    ah.log.debug("End function returning: %s" %  out)
+    ah.log.debug("End function returning: %s (%s)" %  (out, prettyTime(out)))
     return out

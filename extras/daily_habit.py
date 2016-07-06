@@ -45,7 +45,7 @@ def mark_daily_complete():
 
 def minutes_seconds(NumSecs):
     ah.log.debug("Begin function")
-    out = str(NumSecs // 60) + ':' + str(NumSecs % 60)
+    out = str(NumSecs // 60) + 'm' + str(NumSecs % 60) + 's'
     ah.log.debug("End function returning: %s" % out)
     return out
 

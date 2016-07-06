@@ -6,6 +6,7 @@ from aqt.main import AnkiQt
 from anki.hooks import runHook
 import db_helper
 from anki.utils import intTime
+from aqt.utils import tooltip
 from ah_common import AnkiHabiticaCommon as ah
 
 #TODO: make sure script can survive internet outages.
@@ -424,7 +425,8 @@ class Habitica(object):
         if ah.settings.show_popup:
             self.hrpg_showInfo(hrpgresponse)
         else:
-            self.hrpg_tooltip("Huzzah! You Scored Points!")
+#             self.hrpg_tooltip("Huzzah! You Scored Points!")
+            tooltip(_("Huzzah! You Scored Points!"), period=2500)
 
         #update levels
         if new_lvl > self.lvl and self.lvl > 0:
