@@ -697,7 +697,7 @@ def grab_profile():
 #        if ah.settings.debug: utils.showInfo("adding %s to config dict" % ah.settings.profile)
         ah.log.info("adding %s to config dict" % ah.settings.profile)
     ready_or_not()
-    if ah.settings.check_db_on_profile_load and ah.habitica.grab_scorecounter('Anki Points') and compare_score_to_db():
+    if ah.settings.check_db_on_profile_load and ah.settings.configured and ah.habitica.grab_scorecounter('Anki Points') and compare_score_to_db():
 #         TODO: the idea was to check the db (fast) then then ask the user if they wanted to sync iwth Habitica (slow), but
 #                there's an issue whree ['score'] shows a different value after the above call to compare_score_to_db() then 
 #                what is shwon when score_backlog() is called. This discrepency is easy to see in the log:

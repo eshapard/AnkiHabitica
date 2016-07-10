@@ -6,6 +6,7 @@ from ah_common import AnkiHabiticaCommon as ah
 from anki.hooks import addHook
 import db_helper
 from aqt import *
+from aqt.main import AnkiQt
 
 #-------------Installation Instructions--------------------#
 # Install this file in the AnkiHabitica subdirectory in your
@@ -16,6 +17,7 @@ from aqt import *
 #
 # Configuration Section:
 
+show_dialog = True
 minTime = 30 #Minimum amount of time required in minutes
 habitName = "Anki (%s minute%s)" % (minTime, "" if minTime == 1 else "s") #Name of daily habit to score, default to "Anki (minTime minutes)"
 
@@ -62,6 +64,8 @@ def check_for_min_time():
         ah.log.debug("Daily Anki study time reached, checking off daily!")
         #Mark daily habit complete if not already
         thread.start_new_thread(mark_daily_complete, ())
+        if show_dialog:
+            utils.showinfo("Daily Anki study time reached, checking off daily!")
     ah.log.debug("End function")
 
 addHook("profileLoaded", setup_initial_times)
