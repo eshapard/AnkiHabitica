@@ -7,6 +7,7 @@ from anki.hooks import addHook
 import db_helper
 from aqt import *
 from aqt.main import AnkiQt
+from aqt.utils import tooltip
 
 #-------------Installation Instructions--------------------#
 # Install this file in the AnkiHabitica subdirectory in your
@@ -64,8 +65,7 @@ def check_for_min_time():
         ah.log.debug("Daily Anki study time reached, checking off daily!")
         #Mark daily habit complete if not already
         thread.start_new_thread(mark_daily_complete, ())
-        if show_dialog:
-            utils.showinfo("Daily Anki study time reached, checking off daily!")
+        tooltip(_("Daily Huzzah! Anki study time reached, checking off daily!\n\n...unless it's already been checked off..."), period=2500)
     ah.log.debug("End function")
 
 addHook("profileLoaded", setup_initial_times)
