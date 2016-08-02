@@ -64,6 +64,7 @@ class BaseRotatingHandler(logging.FileHandler):
         logging.FileHandler.__init__(self, filename, mode, encoding, delay)
         self.mode = mode
         self.encoding = encoding
+        self.delay = delay
 
     def emit(self, record):
         """
@@ -117,6 +118,7 @@ class RotatingFileHandler(BaseRotatingHandler):
         BaseRotatingHandler.__init__(self, filename, mode, encoding, delay)
         self.maxBytes = maxBytes
         self.backupCount = backupCount
+        self.delay = delay
 
     def doRollover(self):
         """
