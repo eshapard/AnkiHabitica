@@ -709,7 +709,7 @@ def grab_profile():
         ah.log.debug("%s point(s) earned of %s required" % (ah.config[ah.settings.profile]['score'], ah.settings.sched))
         if ah.config[ah.settings.profile]['score'] >= ah.settings.sched or ah.config[ah.settings.profile]['oldscore'] >= ah.settings.sched:
             ah.log.debug("Asking user to sync backlog.")
-            if utils.askUser('New reviews found. Sync with Habitica now?\n\nWARNING: Make sure Anki is synced across your devices before you do this. If you do this and you have unsynced reviews on anohter device, those reviews will not be counted towards Habitica points!'):
+            if utils.askUser('New reviews found. Sync with Habitica now?\n\nWARNING: Make sure Anki is synced across your devices before you do this. If you do this and you have unsynced reviews on another device, those reviews will not be counted towards Habitica points!'):
                 ah.log.debug('Syncing backlog')
                 score_backlog(True)
 #         score_backlog(True)
