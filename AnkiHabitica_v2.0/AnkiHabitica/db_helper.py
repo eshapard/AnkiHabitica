@@ -21,14 +21,14 @@ timebox_seconds = 900 #hard-set 'timebox' length in seconds
 
 # Return a formatted date string
 def prettyTime(secFromEpoch):
-    ah.log.debug("Begin function")
+    if ah.settings.keep_log: ah.log.debug("Begin function")
     out = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(secFromEpoch))
-    ah.log.debug("End function returning: %s" %  out)
+    if ah.settings.keep_log: ah.log.debug("End function returning: %s" %  out)
     return out
 
 #Find correct answers since start_date
 def correct_answer_count(start_date):
-    ah.log.debug("Begin function")
+    if ah.settings.keep_log: ah.log.debug("Begin function")
     # only get number of correct answers
     dbScore = mw.col.db.scalar("""select 
         count()
@@ -36,12 +36,12 @@ def correct_answer_count(start_date):
         ease is not 1 and
         id/1000 > ?""", 
         start_date)
-    ah.log.debug("End function returning: %s" %  dbScore)
+    if ah.settings.keep_log: ah.log.debug("End function returning: %s" %  dbScore)
     return dbScore
 
 #Find wrong answers since start_date
 def wrong_answer_count(start_date):
-    ah.log.debug("Begin function")
+    if ah.settings.keep_log: ah.log.debug("Begin function")
     # only get number of wrong answers
     dbScore = mw.col.db.scalar("""select 
         count()
@@ -49,12 +49,12 @@ def wrong_answer_count(start_date):
         ease = 1 and
         id/1000 > ?""", 
         start_date)
-    ah.log.debug("End function returning: %s" %  dbScore)
+    if ah.settings.keep_log: ah.log.debug("End function returning: %s" %  dbScore)
     return dbScore
 
 #Find total time in seconds of all activity since start_date
 def seconds_count(start_date):
-    ah.log.debug("Begin function")
+    if ah.settings.keep_log: ah.log.debug("Begin function")
     dbTime = mw.col.db.scalar("""select 
         sum(time)/1000 
         from revlog where 
@@ -62,12 +62,12 @@ def seconds_count(start_date):
         start_date)
     # In case no reviews were found, dbTime will be None, so fix that
     if dbTime is None: dbTime = 0 
-    ah.log.debug("End function returning: %s" %  dbTime)
+    if ah.settings.keep_log: ah.log.debug("End function returning: %s" %  dbTime)
     return dbTime
 
 #Find timeboxes since start_date
 def timebox_count(start_date):
-    ah.log.debug("Begin function")
+    if ah.settings.keep_log: ah.log.debug("Begin function")
     dbTime = seconds_count(start_date)
     #Original code used actual timebox settings
     # but this leads to big problems when the user
@@ -77,12 +77,12 @@ def timebox_count(start_date):
     #else:
     #    dbTboxes = 0
     dbTboxes = dbTime // timebox_seconds
-    ah.log.debug("End function returning: %s" %  dbTboxes)
+    if ah.settings.keep_log: ah.log.debug("End function returning: %s" %  dbTboxes)
     return dbTboxes
 
 #Count mature cards
 def matured_count(start_date):
-    ah.log.debug("Begin function")
+    if ah.settings.keep_log: ah.log.debug("Begin function")
     dbMatured = mw.col.db.scalar("""
         select count() 
         from revlog 
@@ -91,7 +91,7 @@ def matured_count(start_date):
         and id/1000 > ?
         """,start_date)
     if dbMatured is None: dbMatured = 0
-    ah.log.debug("End function returning: %s" %  dbMatured)
+    if ah.settings.keep_log: ah.log.debug("End function returning: %s" %  dbMatured)
     return dbMatured
 
 #Count new learing cards - cards entering the learning queue (type = 0)
@@ -99,7 +99,7 @@ def matured_count(start_date):
 #Note: Learning cards may have several reviews and all show up as type=0
 #      so we do a subquery to select the minimum review id and group by card id
 def learned_count(start_date):
-    ah.log.debug("Begin function")
+    if ah.settings.keep_log: ah.log.debug("Begin function")
     learned = 0
     learned = mw.col.db.scalar("""
         select count() from
@@ -111,12 +111,12 @@ def learned_count(start_date):
         """,
         oldTime = start_date)
     if learned is None: learned = 0
-    ah.log.debug("End function returning: %s" %  learned)
+    if ah.settings.keep_log: ah.log.debug("End function returning: %s" %  learned)
     return learned
 
 #Find number of decks completed
 def decks_count(start_date):
-    ah.log.debug("Begin function")
+    if ah.settings.keep_log: ah.log.debug("Begin function")
     '''
     new decks from db
     Here it takes a little bit of work. 
@@ -194,13 +194,13 @@ def decks_count(start_date):
                 """, p['id'])
             if not pCardCount > cCardCount: dbDecks -= 1
             
-    ah.log.debug("End function returning: %s" %  dbDecks)
+    if ah.settings.keep_log: ah.log.debug("End function returning: %s" %  dbDecks)
     return dbDecks
 
 #return the time (seconds since epoch) of the most recent review in the database
 def latest_review_time():
-    ah.log.debug("Begin function")
+    if ah.settings.keep_log: ah.log.debug("Begin function")
     out = mw.col.db.scalar("select max(id/1000) from revlog")
     if out is None: out = intTime()
-    ah.log.debug("End function returning: %s (%s)" %  (out, prettyTime(out)))
+    if ah.settings.keep_log: ah.log.debug("End function returning: %s (%s)" %  (out, prettyTime(out)))
     return out
