@@ -24,18 +24,18 @@ Stable version: 2.0
 
 #### Linux:
 
-Install ankihabitica.py and the AnkiHabitica subdirectory to $HOME/Anki/addons/ directory
-Start Ank and run Tools >> AnkiHabitica >> Setup AnkiHabitica
-     enter userID and apiKey from HabitRPG
+* Install ankihabitica.py and the AnkiHabitica subdirectory to $HOME/Anki/addons/ directory
+* Start Ank and run Tools >> AnkiHabitica >> Setup AnkiHabitica
+ * enter userID and apiKey from HabitRPG
      
 Habitica userID and apiKey: These are NOT your username and password! See the API section of the settings menu in Habitica: https://habitica.com/#/options/settings/api
 
 
 #### Windows and Mac:
 
-Install ankihabitica.py and the AnkiHabitica subdirectory to [your home directory]/Documents/Anki/addons directory
-Start Ank and run Tools >> Setup HabitRPG
-     enter userID and apiKey from HabitRPG
+* Install ankihabitica.py and the AnkiHabitica subdirectory to [your home directory]/Documents/Anki/addons directory
+* Start Ank and run Tools >> Setup HabitRPG
+ * enter userID and apiKey from HabitRPG
      
 
 
