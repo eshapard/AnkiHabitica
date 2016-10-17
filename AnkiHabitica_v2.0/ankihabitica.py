@@ -70,6 +70,7 @@ def reset_ah_settings():
     ah.settings.token = None #Holder for current profile api-token
     ah.settings.user = None #Holder for current profile user-id
     ah.settings.progbar = ""
+    ah.settings.hrpg_progbar = ""
     if ah.settings.keep_log: ah.log.debug("End function")
 
 #Set these settings on initial run
