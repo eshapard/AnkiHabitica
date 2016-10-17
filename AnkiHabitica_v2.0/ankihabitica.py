@@ -25,7 +25,7 @@ class ah_settings: #tiny class for holding settings
     #Note: Anki Habitica keeps track of its own points.
     #      Once those points reach the 'sched' limit,
     #      Anki Habitica scores the 'Anki Points' habit.
-    
+
     ############### YOU MAY EDIT THESE SETTINGS ###############
     sched = 12                  #score habitica when this number of points is reached
     step = 1                    #this is how many points each tick of the progress bar represents
@@ -54,7 +54,7 @@ ah.settings.allow_threads = True #No threads yet in this file, so it doesn't mat
 # A log file will grow to 1MB, at which point it will be rotated.
 # There can be as many as 5 log files, each 1MB, before old files will be removed.
 # The log file will be made regardless of logging being enabled, but its size will be
-# null unless logging is enabled. 
+# null unless logging is enabled.
 setupLog(ah)
 if ah.settings.keep_log: ah.log.info('Logfile initialized')
 
@@ -70,18 +70,19 @@ def reset_ah_settings():
     ah.settings.token = None #Holder for current profile api-token
     ah.settings.user = None #Holder for current profile user-id
     ah.settings.progbar = ""
+    ah.settings.hrpg_progbar = ""
     if ah.settings.keep_log: ah.log.debug("End function")
 
 #Set these settings on initial run
 ah.settings.threshold = int(0.8 * ah.settings.sched)
 ah.settings.internet = False #Can connect to habitica
 ah.settings.conf_read = False #Read conf file only once
-ah.settings.profile = 'User 1' #Will be changed to current password
+ah.settings.profile = u'User 1' #Will be changed to current password
 ah.settings.configured = False #If config file exists
 ah.settings.import_rejected = False #Prompt to import old config only once
 reset_ah_settings()
 
-#Submenu 
+#Submenu
 if ah.settings.keep_log: ah.log.debug('Adding AnkiHabitica menu')
 AnkiHabiticaMenu = QMenu("AnkiHabitica", mw)
 mw.form.menuTools.addMenu(AnkiHabiticaMenu)
@@ -100,7 +101,7 @@ for f in ["Anki_HRPG.py", "ankiHRPG.py", "ankiHRPG_v0.5.py", "ankiHRPG_v1.0.py",
         warning = "I've detected an old version of ankiHRPG installed.\n We must remove the old version and restart Anki.\n\nPlease delete %s.\n\nWould you like me to delete the file for you?" % old_version_file
         if ah.settings.keep_log: ah.log.debug(warning.replace('\n', ' '))
         delete_me = utils.askUser(warning)
-        if delete_me: 
+        if delete_me:
             if ah.settings.keep_log: ah.log.info("Deleting old version of add-on: %s" % old_version_file)
             os.remove(old_version_file)
             utils.showInfo("Please shut down and restart Anki.")
@@ -176,7 +177,7 @@ def read_conf_file(conffile):
     ah.settings.configured = True
     if ah.settings.keep_log: ah.log.debug("Settings contents: %s" % ah.settings)
     if ah.settings.keep_log: ah.log.debug("End function")
-    
+
 #Function to read the OLD configuration file if it exists
 def read_OLD_conf_file(old_conffile):
     if ah.settings.keep_log: ah.log.debug("Begin function")
@@ -191,7 +192,7 @@ def read_OLD_conf_file(old_conffile):
     return False
 
 
-#Save stats to config file 
+#Save stats to config file
 def save_stats(x=None,y=None):
     if ah.settings.keep_log: ah.log.debug("Begin function")
     json.dump( ah.config, open( ah.conffile, 'w' ) )
@@ -221,7 +222,7 @@ def configure_ankihabitica():
                 ah.config[ah.settings.profile]['token'] = ah.old_config['token']
                 ah.settings.user = ah.old_config['user']
                 ah.settings.token = ah.old_config['token']
-                ah.settings.configured = True            
+                ah.settings.configured = True
                 if ah.settings.keep_log: ah.log.debug("OK, I imorted the userID and APItoken from the old config file. Would you like to delete the old configuration file?")
                 if utils.askUser("OK, I imorted the userID and APItoken from the old config file.\n\nWould you like to delete the old configuration file?"):
                     if ah.settings.keep_log: ah.log.debug('Deleting old conf file')
@@ -286,7 +287,7 @@ def setup():
             ah.settings.configured = False
             if ah.settings.keep_log: ah.log.warning("End function")
             return
- 
+
         if ok:
             # Create config file and save values
             #strip spaces that sometimes creep in from copy/paste
@@ -349,7 +350,7 @@ def compare_score_to_db():
         ah.config[ah.settings.profile]['score'] = newscore
         if ah.settings.keep_log: ah.log.debug("Old score: %s" % ah.config[ah.settings.profile]['oldscore'])
         if ah.settings.keep_log: ah.log.debug("New score: %s" % newscore)
-        
+
 #         new_date = AnkiHabitica.db_helper.latest_review_time()
 #         if 'Anki Points' in ah.habitica.hnote and ah.habitica.hnote['Anki Points']['scoresincedate']:
 #             ah.habitica.hnote['Anki Points']['scoresincedate'] = new_date
@@ -360,7 +361,7 @@ def compare_score_to_db():
 #             AnkiHabitica.habitica_class.Habitica.offline_sincedate = new_date
 #             AnkiHabitica.habitica_class.Habitica.offline_scorecount = newscore
 #         if ah.settings.keep_log: ah.log.debug("New date: %s" % new_date)
-        
+
 #        if ah.settings.debug: utils.showInfo("compare score: success")
         if ah.settings.keep_log: ah.log.info("compare score: success")
         if ah.settings.keep_log: ah.log.debug("End function returning: %s" %  True)
@@ -379,7 +380,7 @@ def calculate_db_score(start_date):
     dbdecks = int(AnkiHabitica.db_helper.decks_count(start_date) * ah.settings.deckpoints)
     dblearned = int(AnkiHabitica.db_helper.learned_count(start_date) / ah.settings.learned_eq)
     dbmatured = int(AnkiHabitica.db_helper.matured_count(start_date) / ah.settings.matured_eq)
-    dbscore = dbcorrect + dbwrong + dbtimebox + dbdecks + dblearned + dbmatured    
+    dbscore = dbcorrect + dbwrong + dbtimebox + dbdecks + dblearned + dbmatured
     #utils.tooltip(_("%s\ndatabase says we have %s\nrecord shows we have %s\nscore: %s" % (start_date, dbscore, temp, ah.config[ah.settings.profile]['score'])), 2000)
 #     if ah.settings.keep_log: ah.log.debug("%s: database says we have %s, record shows we have %s, score: %s" % (start_date, dbscore, temp, ah.config[ah.settings.profile]['score']))
     if dbscore < 0: dbscore = 0 #sanity check
@@ -495,12 +496,12 @@ def ready_or_not():
         if ah.settings.keep_log: ah.log.info("Ready or not: Initializing habitica")
         initialize_habitica_class()
     #Check to make sure habitica class is initialized
-    if not ah.settings.initialized: 
+    if not ah.settings.initialized:
 #        if ah.settings.debug: utils.showInfo("Ready or not: Not initialized")
         if ah.settings.keep_log: ah.log.warning("Ready or not: Not initialized")
         if ah.settings.keep_log: ah.log.warning("End function returning: %s" %  False)
         return False
-        
+
     if ah.settings.configured and ah.settings.initialized:
 #        if ah.settings.debug: utils.showInfo("Ready: %s %s" % (ah.settings.user, ah.settings.token))
         if ah.settings.keep_log: ah.log.info("Ready: %s %s" % (ah.settings.user, ah.settings.token))
@@ -536,7 +537,7 @@ def hrpg_realtime(dummy=None):
     drop_type = ""
 
     #Check if we are ready; exit if not
-    if not ready_or_not(): 
+    if not ready_or_not():
         if ah.settings.keep_log: ah.log.warning("End function returning: %s" %  False)
         return False
 
@@ -604,7 +605,7 @@ def score_backlog(silent=False):
         return False
 
     #Exit if not ready
-    if not ready_or_not(): 
+    if not ready_or_not():
         if ah.settings.keep_log: ah.log.warning("End function returning: %s" %  False)
         return False
 
@@ -617,13 +618,13 @@ def score_backlog(silent=False):
         if ah.settings.keep_log: ah.log.warning("No internet connection")
         if ah.settings.keep_log: ah.log.warning("End function returning: %s" %  False)
         return False
-    
+
     ah.habitica.grab_scorecounter('Anki Points')
-    
+
     #Compare database to scored points
     if compare_score_to_db():
         if ah.config[ah.settings.profile]['score'] < ah.settings.sched:
-            if not silent: 
+            if not silent:
                 utils.showInfo("No backlog to score")
             if ah.settings.keep_log: ah.log.info("No backlog to score")
             if ah.settings.keep_log: ah.log.debug("End function returning: %s" %  True)
@@ -690,7 +691,7 @@ AnkiHabiticaMenu.addAction(avatar_action)
 def grab_profile():
     if ah.settings.keep_log: ah.log.debug("Begin function")
     reset_ah_settings()
-    ah.settings.profile = str(aqt.mw.pm.name)
+    ah.settings.profile = aqt.mw.pm.name
 #    if ah.settings.debug: utils.showInfo("your profile is %s" % (ah.settings.profile))
     if ah.settings.keep_log: ah.log.info("your profile is %s" % (ah.settings.profile))
     if ah.settings.profile not in ah.config:
@@ -700,13 +701,13 @@ def grab_profile():
     ready_or_not()
     if ah.settings.check_db_on_profile_load and ah.settings.configured and ah.habitica.grab_scorecounter('Anki Points') and compare_score_to_db():
 #         TODO: the idea was to check the db (fast) then then ask the user if they wanted to sync iwth Habitica (slow), but
-#                there's an issue whree ['score'] shows a different value after the above call to compare_score_to_db() then 
+#                there's an issue whree ['score'] shows a different value after the above call to compare_score_to_db() then
 #                what is shwon when score_backlog() is called. This discrepency is easy to see in the log:
 #                1. do some reviews on another device and then sync
 #                2. open anki and load profile. the log will show that 0 scores have been found
 #                3. immediately sync backlog and see in log that more than 0 are there.
 #                So, I'm just running score_backlog() either way.
-                
+
         if ah.settings.keep_log: ah.log.debug("%s point(s) earned of %s required" % (ah.config[ah.settings.profile]['score'], ah.settings.sched))
         if ah.config[ah.settings.profile]['score'] >= ah.settings.sched or ah.config[ah.settings.profile]['oldscore'] >= ah.settings.sched:
             if ah.settings.keep_log: ah.log.debug("Asking user to sync backlog.")
