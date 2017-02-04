@@ -35,7 +35,7 @@ class ah_settings: #tiny class for holding settings
     timeboxpoints = 1           #points earned for each 15 min 'timebox'
     matured_eq = 2              #this many matured cards gives us one point
     learned_eq = 2              #this many newly learned cards gives us one point
-    deckpoints = 10             #points earned for clearing a deck
+    deckpoints = 0             #points earned for clearing a deck; Default = 0; WARNING: many decks = very slow!
     show_mini_stats = True      #Show Habitica HP, XP, and MP %s next to prog bar
     show_popup = True           #show a popup window when you score points.
     check_db_on_profile_load = True #check Anki database on profile load to see if there are unsynced reviews and sync if there are
@@ -375,11 +375,26 @@ def compare_score_to_db():
 def calculate_db_score(start_date):
     if ah.settings.keep_log: ah.log.debug("Begin function")
     dbcorrect = int(AnkiHabitica.db_helper.correct_answer_count(start_date))
-    dbwrong = int(AnkiHabitica.db_helper.wrong_answer_count(start_date) / ah.settings.tries_eq)
-    dbtimebox = int(AnkiHabitica.db_helper.timebox_count(start_date) * ah.settings.timeboxpoints)
-    dbdecks = int(AnkiHabitica.db_helper.decks_count(start_date) * ah.settings.deckpoints)
-    dblearned = int(AnkiHabitica.db_helper.learned_count(start_date) / ah.settings.learned_eq)
-    dbmatured = int(AnkiHabitica.db_helper.matured_count(start_date) / ah.settings.matured_eq)
+    if ah.settings.tries_eq:
+        dbwrong = int(AnkiHabitica.db_helper.wrong_answer_count(start_date) / ah.settings.tries_eq)
+    else:
+        dbwrong = 0
+    if ah.settings.timeboxpoints:
+        dbtimebox = int(AnkiHabitica.db_helper.timebox_count(start_date) * ah.settings.timeboxpoints)
+    else:
+        dbtimebox = 0
+    if ah.settings.deckpoints:
+        dbdecks = int(AnkiHabitica.db_helper.decks_count(start_date) * ah.settings.deckpoints)
+    else:
+        dbdecks = 0
+    if ah.settings.learned_eq:
+        dblearned = int(AnkiHabitica.db_helper.learned_count(start_date) / ah.settings.learned_eq)
+    else:
+        dblearned = 0
+    if ah.settings.matured_eq:
+        dbmatured = int(AnkiHabitica.db_helper.matured_count(start_date) / ah.settings.matured_eq)
+    else:
+        dbmatured = 0
     dbscore = dbcorrect + dbwrong + dbtimebox + dbdecks + dblearned + dbmatured
     #utils.tooltip(_("%s\ndatabase says we have %s\nrecord shows we have %s\nscore: %s" % (start_date, dbscore, temp, ah.config[ah.settings.profile]['score'])), 2000)
 #     if ah.settings.keep_log: ah.log.debug("%s: database says we have %s, record shows we have %s, score: %s" % (start_date, dbscore, temp, ah.config[ah.settings.profile]['score']))
