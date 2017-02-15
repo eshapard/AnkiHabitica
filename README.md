@@ -48,4 +48,6 @@ Habitica userID and apiKey: These are NOT your username and password! See the AP
 
 See the wiki for a detailed description: https://github.com/eshapard/AnkiHabitica/wiki
             
-           
+## General Anki Tips
+
+I occasionally post tips on using Anki and calibrating its settings at https://eshapard.github.io/anki/
