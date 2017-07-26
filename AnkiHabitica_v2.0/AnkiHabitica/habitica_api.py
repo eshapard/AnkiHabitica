@@ -69,6 +69,7 @@ class HabiticaAPI(object):
            req.get_method = lambda:"DELETE"
         if method == "post":
            req.add_header('Content-Type', 'application/json') #Important!
+           if not data: req.add_header('Content-Length', '0') #makes blank data work
            req.get_method = lambda:"POST" #Needed for no-data posts
 
         if t:
