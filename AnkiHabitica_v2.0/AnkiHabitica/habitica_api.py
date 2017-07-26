@@ -202,7 +202,7 @@ class HabiticaAPI(object):
 
     def test_internet(self):
     	if ah.settings.keep_log: ah.log.debug("Begin function")
-        out =  self.get_api_status(2) #Checking the status of the api is more accurate
+        out =  self.get_api_status(10) #Checking the status of the api is more accurate
         if ah.settings.keep_log: ah.log.debug("End function returning: %s" %  out)
         return out
 #        try:
