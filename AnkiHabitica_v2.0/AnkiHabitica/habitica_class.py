@@ -84,7 +84,7 @@ class Habitica(object):
     def save_avatar(self):
     	if ah.settings.keep_log: ah.log.debug("Begin function")
         #See if there's an image for this profile
-        profile_pic = ah.settings.profile + ".png"
+        profile_pic = ah.settings.user + ".png" #use user id instead of profile name
         self.avatarfile = os.path.join(os.path.dirname(os.path.realpath(__file__)), profile_pic)
         self.avatarfile = self.avatarfile.decode(sys.getfilesystemencoding())
         try:
