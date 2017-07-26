@@ -45,14 +45,15 @@ class HabiticaAPI(object):
         return out
 
 
-    def v3_request(self, method, path, data=None, t=0):
+    def v3_request(self, method, path, data={'dummy': 'dummy'}, t=0):
+        #Dummy data needed for post, put, and delete commands now.
     	if ah.settings.keep_log: ah.log.debug("Begin function")
         path = path if not path.startswith("/") else path[1:]
         path = urllib2.quote(path,'/')
         #print(path)
         url = self.v3_url + path
         #print(url)
-        if data:
+        if not method == 'get' :
            #With data, method defaults to POST
            data = json.dumps(data)
            req = urllib2.Request(url, data)
@@ -169,13 +170,15 @@ class HabiticaAPI(object):
     def perform_task(self, task_id, direction):
     	if ah.settings.keep_log: ah.log.debug("Begin function")
         url = "/tasks/%s/score/%s" % (task_id, direction)
-        out =  self.v3_request("post", url)
+        data = {'dummy': 'dummy'}
+        out =  self.v3_request("post", url, data)
         if ah.settings.keep_log: ah.log.debug("End function returning: %s" %  out)
         return out
     
     def health_potion(self):
     	if ah.settings.keep_log: ah.log.debug("Begin function")
-        out =  self.v3_request("post", "/user/buy-health-potion")
+        data = {'dummy': 'dummy'}
+        out =  self.v3_request("post", "/user/buy-health-potion", data)
         if ah.settings.keep_log: ah.log.debug("End function returning: %s" %  out)
         return out
     
@@ -184,19 +187,22 @@ class HabiticaAPI(object):
         #out =  self.request("post", "/user/class/cast/defensiveStance/?targetType=%s" % (target))
         #if ah.settings.keep_log: ah.log.debug("End function returning: %s" %  out)
         #return out
-        out =  self.v3_request("post", "/user/class/cast/defensiveStance")
+        data = {'dummy': 'dummy'}
+        out =  self.v3_request("post", "/user/class/cast/defensiveStance", data)
         if ah.settings.keep_log: ah.log.debug("End function returning: %s" %  out)
         return out
     
     def feed_pet(self, pet, food):
     	if ah.settings.keep_log: ah.log.debug("Begin function")
-        out =  self.v3_request("post", "/user/equip/feed/%s/%s" % (pet, food))
+        data = {'dummy': 'dummy'}
+        out =  self.v3_request("post", "/user/equip/feed/%s/%s" % (pet, food), data)
         if ah.settings.keep_log: ah.log.debug("End function returning: %s" %  out)
         return out
 
     def get_content_items(self):
     	if ah.settings.keep_log: ah.log.debug("Begin function")
-        out =  self.v3_request("post", "/content")
+        data = {'dummy': 'dummy'}
+        out =  self.v3_request("post", "/content", data)
         if ah.settings.keep_log: ah.log.debug("End function returning: %s" %  out)
         return out
 
