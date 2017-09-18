@@ -423,8 +423,8 @@ def make_habit_progbar():
         real_point_length = int(cur_score / ah.settings.step) % real_length #total real bar length
         #Find extra points to add to shaded bar to make the
         #   bar seem to double after threshold
-        if real_point_length >= ah.settings.threshold:
-            extra = real_point_length - ah.settings.threshold
+        if real_point_length >= int(ah.settings.threshold / ah.settings.step):
+            extra = real_point_length - int(ah.settings.threshold / ah.settings.step)
         else:
             extra = 0
         #length of shaded bar including threshold trickery
