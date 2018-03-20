@@ -40,7 +40,7 @@ class ah_settings: #tiny class for holding settings
     show_popup = True           #show a popup window when you score points.
     check_db_on_profile_load = True #check Anki database on profile load to see if there are unsynced reviews and sync if there are
     keep_log = False             #log activity to file
-    download_avatar = False      #downloading avatar images is currently broken on Habitica's end
+    download_avatar = False      #downloading avatar images is currently broken on Habitica's end with no fix in sight
     ############# END USER CONFIGURABLE SETTINGS #############
 
 
