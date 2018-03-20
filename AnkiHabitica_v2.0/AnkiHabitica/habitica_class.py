@@ -83,6 +83,10 @@ class Habitica(object):
     #Save avatar from habitica as png
     def save_avatar(self):
     	if ah.settings.keep_log: ah.log.debug("Begin function")
+        #Check to see if we are downloading the avatar image
+        if not ah.settings.download_avatar:
+            if ah.settings.keep_log: ah.log.debug("Function Return - not downloading avatar")
+            return
         #See if there's an image for this profile
         profile_pic = ah.settings.user + ".png" #use user id instead of profile name
         self.avatarfile = os.path.join(os.path.dirname(os.path.realpath(__file__)), profile_pic)
