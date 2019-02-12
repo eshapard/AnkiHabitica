@@ -2,7 +2,7 @@
 
 Stable Version: 2.0
 
-Anki 2 add-on for use with Habitica. Places a progress bar on the bottom of the review screen and scores a Habitica habit when the progress bar reaches the end. Also shows your health, exp, and mana stats as percentages to the right of the progress bar.
+Anki 2.0 add-on for use with Habitica. Places a progress bar on the bottom of the review screen and scores a Habitica habit when the progress bar reaches the end. Also shows your health, exp, and mana stats as percentages to the right of the progress bar.
 
 See the wiki for more details: https://github.com/eshapard/AnkiHabitica/wiki
 
