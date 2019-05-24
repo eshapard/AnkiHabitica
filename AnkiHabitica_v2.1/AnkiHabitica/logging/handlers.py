@@ -23,7 +23,7 @@ Copyright (C) 2001-2013 Vinay Sajip. All Rights Reserved.
 To use, simply 'import logging.handlers' and log away!
 """
 
-import errno, logging, socket, os, cPickle, struct, time, re
+import errno, logging, socket, os, pickle, struct, time, re
 from stat import ST_DEV, ST_INO, ST_MTIME
 
 try:
@@ -31,7 +31,7 @@ try:
 except ImportError:
     codecs = None
 try:
-    unicode
+    str
     _unicode = True
 except NameError:
     _unicode = False
@@ -547,7 +547,7 @@ class SocketHandler(logging.Handler):
         d = dict(record.__dict__)
         d['msg'] = record.getMessage()
         d['args'] = None
-        s = cPickle.dumps(d, 1)
+        s = pickle.dumps(d, 1)
         if ei:
             record.exc_info = ei  # for next handler
         slen = struct.pack(">L", len(s))
@@ -758,7 +758,7 @@ class SysLogHandler(logging.Handler):
         self.facility = facility
         self.socktype = socktype
 
-        if isinstance(address, basestring):
+        if isinstance(address, str):
             self.unixsocket = 1
             self._connect_unixsocket(address)
         else:
@@ -808,9 +808,9 @@ class SysLogHandler(logging.Handler):
         priority_names mapping dictionaries are used to convert them to
         integers.
         """
-        if isinstance(facility, basestring):
+        if isinstance(facility, str):
             facility = self.facility_names[facility]
-        if isinstance(priority, basestring):
+        if isinstance(priority, str):
             priority = self.priority_names[priority]
         return (facility << 3) | priority
 
@@ -852,7 +852,7 @@ class SysLogHandler(logging.Handler):
             prio = '<%d>' % self.encodePriority(self.facility,
                                                 self.mapPriority(record.levelname))
             # Message is a string. Convert to bytes as required by RFC 5424
-            if type(msg) is unicode:
+            if type(msg) is str:
                 msg = msg.encode('utf-8')
             msg = prio + msg
             if self.unixsocket:
@@ -901,7 +901,7 @@ class SMTPHandler(logging.Handler):
         else:
             self.username = None
         self.fromaddr = fromaddr
-        if isinstance(toaddrs, basestring):
+        if isinstance(toaddrs, str):
             toaddrs = [toaddrs]
         self.toaddrs = toaddrs
         self.subject = subject
@@ -1082,11 +1082,11 @@ class HTTPHandler(logging.Handler):
         Send the record to the Web server as a percent-encoded dictionary
         """
         try:
-            import httplib, urllib
+            import http.client, urllib.request, urllib.parse, urllib.error
             host = self.host
-            h = httplib.HTTP(host)
+            h = http.client.HTTP(host)
             url = self.url
-            data = urllib.urlencode(self.mapLogRecord(record))
+            data = urllib.parse.urlencode(self.mapLogRecord(record))
             if self.method == "GET":
                 if (url.find('?') >= 0):
                     sep = '&'

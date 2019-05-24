@@ -1,10 +1,10 @@
 #Anki Database Helper Functions
 # Special Thanks to Tim Wilson for this code!
-from __future__ import division
+
 import datetime, time
 from aqt import mw
 from anki.utils import ids2str, intTime
-from ah_common import AnkiHabiticaCommon as ah
+from .ah_common import AnkiHabiticaCommon as ah
 
 timebox_seconds = 900 #hard-set 'timebox' length in seconds
 # having a hard-coded 'timebox' length solves the problem of

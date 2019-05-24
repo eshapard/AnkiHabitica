@@ -1,8 +1,8 @@
 #Habitica API
-import urllib2, urllib
+import urllib.request, urllib.error, urllib.parse, urllib.request, urllib.parse, urllib.error
 import json
 import random
-from ah_common import AnkiHabiticaCommon as ah
+from .ah_common import AnkiHabiticaCommon as ah
 
 class HabiticaAPI(object):
     DIRECTION_UP = "up"
@@ -25,22 +25,22 @@ class HabiticaAPI(object):
     def request(self, method, path, data=None):
     	if ah.settings.keep_log: ah.log.debug("Begin function")
         path = path if not path.startswith("/") else path[1:]
-        path = urllib2.quote(path)
+        path = urllib.parse.quote(path)
         url = self.base_url + path
         if data or method == 'post':
            #With data, method defaults to POST
            data = json.dumps(data)
-           req = urllib2.Request(url, data)
+           req = urllib.request.Request(url, data)
         else:
            #Without data, method defaults to GET
-           req = urllib2.Request(url)
+           req = urllib.request.Request(url)
         req.add_header('x-api-user', self.user_id)
         req.add_header('x-api-key', self.api_key)
         if method == "put":
            req.add_header('Content-Type', 'application/json')
            req.get_method = lambda:"PUT"
 
-        out =  json.load(urllib2.urlopen(req))
+        out =  json.load(urllib.request.urlopen(req))
         if ah.settings.keep_log: ah.log.debug("End function returning: %s" %  out)
         return out
 
@@ -49,17 +49,17 @@ class HabiticaAPI(object):
         #Dummy data needed for post, put, and delete commands now.
     	if ah.settings.keep_log: ah.log.debug("Begin function")
         path = path if not path.startswith("/") else path[1:]
-        path = urllib2.quote(path,'/')
+        path = urllib.parse.quote(path,'/')
         #print(path)
         url = self.v3_url + path
         #print(url)
         if not method == 'get' :
            #With data, method defaults to POST
            data = json.dumps(data)
-           req = urllib2.Request(url, data)
+           req = urllib.request.Request(url, data)
         else:
            #Without data, method defaults to GET
-           req = urllib2.Request(url)
+           req = urllib.request.Request(url)
         req.add_header('x-api-user', self.user_id)
         req.add_header('x-api-key', self.api_key)
         if method == "put":
@@ -73,9 +73,9 @@ class HabiticaAPI(object):
            req.get_method = lambda:"POST" #Needed for no-data posts
 
         if t:
-            response = json.load(urllib2.urlopen(req, None, t))
+            response = json.load(urllib.request.urlopen(req, None, t))
         else:
-            response = json.load(urllib2.urlopen(req))
+            response = json.load(urllib.request.urlopen(req))
 
         if response['success']:
             out =  response['data']
@@ -222,10 +222,10 @@ class HabiticaAPI(object):
     def export_avatar_as_png(self):
     	if ah.settings.keep_log: ah.log.debug("Begin function")
         url = "http://habitica.com/export/avatar-%s.png" % self.user_id
-        req = urllib2.Request(url)
+        req = urllib.request.Request(url)
         req.add_header('x-api-user', self.user_id)
         req.add_header('x-api-key', self.api_key)
-        out =  urllib2.urlopen(req).read()
+        out =  urllib.request.urlopen(req).read()
         if ah.settings.keep_log: ah.log.debug("End function returning avatar")
         return out
 

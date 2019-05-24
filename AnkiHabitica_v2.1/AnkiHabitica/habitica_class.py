@@ -1,13 +1,13 @@
 #!/usr/bin/python
-from habitica_api import HabiticaAPI
-import os, sys, json, datetime, time, thread
+from .habitica_api import HabiticaAPI
+import os, sys, json, datetime, time, _thread
 from aqt import *
 from aqt.main import AnkiQt
 from anki.hooks import runHook
-import db_helper
+from . import db_helper
 from anki.utils import intTime
 from aqt.utils import tooltip
-from ah_common import AnkiHabiticaCommon as ah
+from .ah_common import AnkiHabiticaCommon as ah
 
 #TODO: make sure script can survive internet outages.
 
@@ -56,17 +56,17 @@ class Habitica(object):
             #create a thread to check the habit as to not slow down
             #the startup process
             if Habitica.allow_threads:
-                thread.start_new_thread(self.check_anki_habit, (habit,))
+                _thread.start_new_thread(self.check_anki_habit, (habit,))
             else:
                 self.check_anki_habit(habit)
         #Grab user object in the background
         if Habitica.allow_threads:
-            thread.start_new_thread(self.init_grab_stats, ())
+            _thread.start_new_thread(self.init_grab_stats, ())
         else:
             self.init_grab_stats()
         #Grab avatar from habitica
         if Habitica.allow_threads:
-            thread.start_new_thread(self.save_avatar, ())
+            _thread.start_new_thread(self.save_avatar, ())
         else:
             self.save_avatar()
         if ah.settings.keep_log: ah.log.debug("End function")
@@ -513,7 +513,7 @@ class Habitica(object):
                 return False
         #Post scorecounter to Habit note field
         if Habitica.allow_post_scorecounter_thread:
-            thread.start_new_thread(self.post_scorecounter, (habit,))
+            _thread.start_new_thread(self.post_scorecounter, (habit,))
         else:
             self.post_scorecounter(habit)
 
