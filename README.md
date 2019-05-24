@@ -1,8 +1,8 @@
 # AnkiHabitica
 
-Stable Version: 2.0
+Stable Version: 2.1
 
-Anki 2.0 add-on for use with Habitica. Places a progress bar on the bottom of the review screen and scores a Habitica habit when the progress bar reaches the end. Also shows your health, exp, and mana stats as percentages to the right of the progress bar.
+Anki 2.1 add-on for use with Habitica. Places a progress bar on the bottom of the review screen and scores a Habitica habit when the progress bar reaches the end. Also shows your health, exp, and mana stats as percentages to the right of the progress bar.
 
 See the wiki for more details: https://github.com/eshapard/AnkiHabitica/wiki
 
@@ -18,23 +18,22 @@ Formerly, AnkiHabitica was called AnkiHRPG. Habitica used to be called HabitRPG,
 ### The Easy Way:
 
 * In Anki, go to Tools >> Add-ons >> Browse & Install
-* Paste in the following code: 954979168 
+* Paste in the following code: 954979168
 * Restart Anki
 * After restart, go to Tools >> Ankihabitica >> Setup
 * Open the Habitca API Settings page: https://habitica.com/#/options/settings/api
-* Copy/paste your **User ID** 
+* Copy/paste your **User ID**
 * Copy/paste your **API Token**
 * A new Habitica Habit will be created called Anki Points (after you do some cards!)
 
 ### Manual Installation
-Stable version: 2.0
 
 #### Linux:
 
 * Install ankihabitica.py and the AnkiHabitica subdirectory to $HOME/Anki/addons/ directory
 * Start Ank and run Tools >> AnkiHabitica >> Setup AnkiHabitica
  * enter userID and apiKey from HabitRPG
-     
+
 Habitica userID and apiKey: These are NOT your username and password! See the API section of the settings menu in Habitica: https://habitica.com/#/options/settings/api
 
 
@@ -47,7 +46,7 @@ Habitica userID and apiKey: These are NOT your username and password! See the AP
 ## USE AND CUSTOMIZATION
 
 See the wiki for a detailed description: https://github.com/eshapard/AnkiHabitica/wiki
-            
+
 ## General Anki Tips
 
 I occasionally post tips on using Anki and calibrating its settings at https://eshapard.github.io/anki/
