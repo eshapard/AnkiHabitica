@@ -24,7 +24,6 @@ class Habitica(object):
     # find icon file
     iconfile = os.path.join(os.path.dirname(
         os.path.realpath(__file__)), "habitica_icon.png")
-    iconfile = iconfile.decode(sys.getfilesystemencoding())
     offline_sincedate = intTime()  # Score Since date for when we are offline
     offline_scorecount = 0  # Starting score for offline
     offline_recover_attempt = 0  # attempt to recover from offline state every third time
@@ -105,7 +104,6 @@ class Habitica(object):
         profile_pic = ah.settings.user + ".png"  # use user id instead of profile name
         self.avatarfile = os.path.join(os.path.dirname(
             os.path.realpath(__file__)), profile_pic)
-        self.avatarfile = self.avatarfile.decode(sys.getfilesystemencoding())
         try:
             pngfile = self.api.export_avatar_as_png()  # Grab avatar png from Habitica
             if not pngfile:

@@ -115,7 +115,6 @@ if ah.settings.keep_log:
 for f in ["Anki_HRPG.py", "ankiHRPG.py", "ankiHRPG_v0.5.py", "ankiHRPG_v1.0.py", "ankiHRPG_v1.2.py"]:
     old_version_file = os.path.join(
         os.path.dirname(os.path.realpath(__file__)), f)
-    old_version_file = old_version_file.decode(sys.getfilesystemencoding())
     if os.path.exists(old_version_file):
         if ah.settings.keep_log:
             ah.log.info("Old version found: %s" % old_version_file)
@@ -140,8 +139,6 @@ ah.old_conffile = os.path.join(os.path.dirname(
     os.path.realpath(__file__)), ".habitrpg.conf")
 ah.conffile = os.path.join(os.path.dirname(
     os.path.realpath(__file__)), "AnkiHabitica", "AnkiHabitica.conf")
-ah.conffile = ah.conffile.decode(sys.getfilesystemencoding())
-ah.old_conffile = ah.old_conffile.decode(sys.getfilesystemencoding())
 
 # Handle old config files
 ah.old_config_exists = False
