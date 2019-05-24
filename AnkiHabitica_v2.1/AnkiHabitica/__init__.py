@@ -2,7 +2,8 @@
 # Anki 2 plugin for use with Habitica http://habitica.com
 # Author: Edward Shapard <ed.shapard@gmail.com>
 # With Database Code by: Tim Wilson
-# Version 2.0
+# Port to Anki 2.1 by 71e6fd52 <71e6fd52@gmail.com>
+# Version 2.1
 # License: GNU GPL v3 <www.gnu.org/licenses/gpl.html>
 
 import urllib.request
