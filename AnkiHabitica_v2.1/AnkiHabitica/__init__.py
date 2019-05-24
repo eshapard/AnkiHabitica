@@ -49,12 +49,13 @@ class ah_settings:  # tiny class for holding settings
     keep_log = False  # log activity to file
     # downloading avatar images is currently broken on Habitica's end with no fix in sight
     download_avatar = False
+    # debug mode that raise all exception
+    dubug = False
     ############# END USER CONFIGURABLE SETTINGS #############
 
 
 ### NOTHING FOR USERS TO EDIT below this point ####
 ah.settings = ah_settings  # monkey patch settings to commonly shared class
-ah.settings.debug = True
 # No threads yet in this file, so it doesn't matter habitica_class.py has its own setting to allow threads.
 ah.settings.allow_threads = True
 

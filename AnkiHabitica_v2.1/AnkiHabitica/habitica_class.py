@@ -549,16 +549,14 @@ class Habitica(object):
                             streak_bonus = ""
                         else:
                             streak_bonus += "\n"
-                    streak_bonus += str(round((100 *
-                                               msg['_tmp']['streakBonus']), 0))
+                        streak_bonus += str(round((100 * msg['_tmp']['streakBonus']), 0))
                     if 'crit' in msg['_tmp']:
                         # critical multiplier
                         if not crit_multiplier:
                             crit_multiplier = ""
                         else:
                             crit_multiplier += ", "
-                        crit_multiplier += str(round((100 *
-                                                      msg['_tmp']['crit']), 0))
+                        crit_multiplier += str(round((100 * msg['_tmp']['crit']), 0))
                     if 'drop' in msg['_tmp'] and 'dialog' in msg['_tmp']['drop']:
                         # drop happened
                         if not drop_dialog:

@@ -37,7 +37,7 @@ class HabiticaAPI(object):
         url = self.v3_url + path
         if not method == 'get':
             # With data, method defaults to POST
-            data = json.dumps(data)
+            data = json.dumps(data).encode('UTF-8')
             req = urllib.request.Request(url, data)
         else:
             # Without data, method defaults to GET
