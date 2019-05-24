@@ -51,7 +51,7 @@ class ah_settings:  # tiny class for holding settings
     # downloading avatar images is currently broken on Habitica's end with no fix in sight
     download_avatar = False
     # debug mode that raise all exception
-    dubug = False
+    debug = False
     ############# END USER CONFIGURABLE SETTINGS #############
 
 
