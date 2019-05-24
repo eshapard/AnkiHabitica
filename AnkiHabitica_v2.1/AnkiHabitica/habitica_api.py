@@ -19,39 +19,14 @@ class HabiticaAPI(object):
     TYPE_TODO = "todo"
     TYPE_REWARD = "reward"
 
-    def __init__(self, user_id, api_key, base_url="https://habitica.com:443/api/v2/"):
+    def __init__(self, user_id, api_key):
         if ah.settings.keep_log:
             ah.log.debug("Begin function")
         self.user_id = user_id
         self.api_key = api_key
-        self.base_url = base_url
         self.v3_url = "https://habitica.com/api/v3/"
         if ah.settings.keep_log:
             ah.log.debug("End function")
-
-    def request(self, method, path, data=None):
-        if ah.settings.keep_log:
-            ah.log.debug("Begin function")
-        path = path if not path.startswith("/") else path[1:]
-        path = urllib.parse.quote(path)
-        url = self.base_url + path
-        if data or method == 'post':
-            # With data, method defaults to POST
-            data = json.dumps(data)
-            req = urllib.request.Request(url, data)
-        else:
-            # Without data, method defaults to GET
-            req = urllib.request.Request(url)
-        req.add_header('x-api-user', self.user_id)
-        req.add_header('x-api-key', self.api_key)
-        if method == "put":
-            req.add_header('Content-Type', 'application/json')
-            req.get_method = lambda: "PUT"
-
-        out = json.load(urllib.request.urlopen(req))
-        if ah.settings.keep_log:
-            ah.log.debug("End function returning: %s" % out)
-        return out
 
     def v3_request(self, method, path, data={'dummy': 'dummy'}, t=0):
         # Dummy data needed for post, put, and delete commands now.
@@ -59,9 +34,7 @@ class HabiticaAPI(object):
             ah.log.debug("Begin function")
         path = path if not path.startswith("/") else path[1:]
         path = urllib.parse.quote(path, '/')
-        # print(path)
         url = self.v3_url + path
-        # print(url)
         if not method == 'get':
             # With data, method defaults to POST
             data = json.dumps(data)
@@ -220,9 +193,6 @@ class HabiticaAPI(object):
     def defensive_stance(self, target='self'):
         if ah.settings.keep_log:
             ah.log.debug("Begin function")
-        #out =  self.request("post", "/user/class/cast/defensiveStance/?targetType=%s" % (target))
-        #if ah.settings.keep_log: ah.log.debug("End function returning: %s" %  out)
-        # return out
         data = {'dummy': 'dummy'}
         out = self.v3_request("post", "/user/class/cast/defensiveStance", data)
         if ah.settings.keep_log:
@@ -251,17 +221,10 @@ class HabiticaAPI(object):
     def test_internet(self):
         if ah.settings.keep_log:
             ah.log.debug("Begin function")
-        # Checking the status of the api is more accurate
         out = self.get_api_status(10)
         if ah.settings.keep_log:
             ah.log.debug("End function returning: %s" % out)
         return out
-#        try:
-#            response=urllib2.urlopen('http://habitica.com', timeout=1)
-#            return True
-#        except urllib2.URLError as err:
-#            pass
-#        return False
 
     def export_avatar_as_png(self):
         if ah.settings.keep_log:

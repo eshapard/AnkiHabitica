@@ -14,11 +14,9 @@ from anki.utils import intTime
 from aqt.utils import tooltip
 from .ah_common import AnkiHabiticaCommon as ah
 
+
 # TODO: make sure script can survive internet outages.
-
-
 class Habitica(object):
-    #     debug = False
     allow_threads = True  # startup config processes checking habits, etc.
     allow_post_scorecounter_thread = True  # Maybe a source of database warnings?
     # find icon file
@@ -32,11 +30,6 @@ class Habitica(object):
         if ah.settings.keep_log:
             ah.log.debug("Begin function")
         self.api = HabiticaAPI(ah.settings.user, ah.settings.token)
-        #ah.settings.profile = profile
-        #ah.conffile = ah.conffile
-        #self.habitlist = ah.settings.habitlist
-        #ah.settings.show_popup = show_popup
-        # ah.settings.sched_dict = ah.settings.sched_dict #holder for habit reward schedules
         self.name = 'Anki User'
         self.lvl = 0
         self.xp = 0
@@ -108,8 +101,7 @@ class Habitica(object):
             pngfile = self.api.export_avatar_as_png()  # Grab avatar png from Habitica
             if not pngfile:
                 if ah.settings.keep_log:
-                    ah.log.error("End function returning: %s" %
-                                 False)  # Exit if we failed
+                    ah.log.error("End function returning: %s" % False)  # Exit if we failed
                 return False  # Exit if we failed
             with open(self.avatarfile, 'wb') as outfile:
                 outfile.write(pngfile)
@@ -158,7 +150,6 @@ class Habitica(object):
     def update_stats(self, silent=False):
         if ah.settings.keep_log:
             ah.log.debug("Begin function")
-        #self.hrpg_tooltip("Connecting to Habitica")
         try:
             user = self.get_user_object()
         except:
@@ -178,7 +169,6 @@ class Habitica(object):
         self.xt = self.stats['toNextLevel']
         self.ht = self.stats['maxHealth']
         self.mt = self.stats['maxMP']
-        #if Habitica.debug: utils.showInfo(self.name)
         if ah.settings.keep_log:
             ah.log.debug(self.name)
         if ah.settings.keep_log:
@@ -204,9 +194,6 @@ class Habitica(object):
             ah.log.debug("Begin function")
         try:
             habitID = self.habit_id[habit]
-            #out =  self.api.alter_task("Anki Points", True, False, None, None, None, "int", None)
-            #if ah.settings.keep_log: ah.log.debug("End function returning: %s" %  out)
-            # return out
             data = {'up': True, 'down': False, 'attribute': 'int'}
             out = self.api.update_task(habitID, data)
             if ah.settings.keep_log:
@@ -223,7 +210,6 @@ class Habitica(object):
         if ah.settings.keep_log:
             ah.log.debug("Begin function")
         found = False
-        #if Habitica.debug: utils.showInfo("checking %s" % habit)
         if ah.settings.keep_log:
             ah.log.debug("checking %s" % habit)
         if habit not in self.habit_id:
@@ -237,16 +223,13 @@ class Habitica(object):
         else:
             habitID = self.habit_id[habit]
             # We have an ID, but we may want to check that the habit still exists
-        #if Habitica.debug: utils.showInfo("HabitID: %s" % habitID)
         if ah.settings.keep_log:
             ah.log.debug("HabitID: %s" % habitID)
         if not habitID:  # find_habit_id returned False; habit not found!
-            #if Habitica.debug: utils.showInfo("Habit ID Missing")
             if ah.settings.keep_log:
                 ah.log.warning("Habit ID Missing")
             del self.habit_id[habit]
             self.missing[habit] = True
-            #if Habitica.debug: utils.showInfo("Task not found")
             if ah.settings.keep_log:
                 ah.log.warning("Task not found")
             self.create_missing_habit(habit)
@@ -254,13 +237,11 @@ class Habitica(object):
                 ah.log.warning("End function returning: %s" % False)
             return False
         # Check to see if habit Still exists
-        #if Habitica.debug: utils.showInfo("Checking %s habit" % habit)
         if ah.settings.keep_log:
             ah.log.debug("Checking %s habit" % habit)
         if not found:
             try:
                 tasks = self.api.tasks()
-                #if Habitica.debug: utils.showInfo(json.dumps(tasks))
                 if ah.settings.keep_log:
                     ah.log.debug(json.dumps(tasks))
                 for t in tasks:
@@ -269,12 +250,10 @@ class Habitica(object):
                 if found:
                     self.missing[habit] = False
                     del tasks
-                    #if Habitica.debug: utils.showInfo("Task found")
                     if ah.settings.keep_log:
                         ah.log.debug("Task found")
                 else:
                     self.missing[habit] = True
-                    #if Habitica.debug: utils.showInfo("Task not found")
                     if ah.settings.keep_log:
                         ah.log.warning("Task not found")
                     self.create_missing_habit(habit)
@@ -285,13 +264,11 @@ class Habitica(object):
             except:
                 pass
         # Check to see that habitica habit is set up properly
-        #if Habitica.debug: utils.showInfo("Checking habit setup")
         if ah.settings.keep_log:
             ah.log.debug("Checking habit setup")
         try:
             response = self.api.task(habitID)
         except:
-            #if Habitica.debug: utils.showInfo("Could not retrieve task")
             if ah.settings.keep_log:
                 ah.log.error("Could not retrieve task")
             if ah.settings.keep_log:
@@ -299,7 +276,6 @@ class Habitica(object):
             return False
         if response['down'] or response['attribute'] != "int":
             try:
-                #if Habitica.debug: utils.showInfo("Updating Habit")
                 if ah.settings.keep_log:
                     ah.log.debug("Updating Habit")
                 self.update_anki_habit(habitID)
@@ -312,7 +288,6 @@ class Habitica(object):
                 if ah.settings.keep_log:
                     ah.log.error("End function returning: %s" % False)
                 return False
-        #if Habitica.debug: utils.showInfo("Habit looks good")
         if ah.settings.keep_log:
             ah.log.debug("Habit looks good")
         # Grab scorecounter from habit
@@ -327,7 +302,6 @@ class Habitica(object):
             ah.log.debug("Begin function")
         try:
             # create habit
-            #if Habitica.debug: utils.showInfo("Trying to create %s habit" % habit)
             if ah.settings.keep_log:
                 ah.log.debug("Trying to create %s habit" % habit)
             # create task on habitica
@@ -338,13 +312,10 @@ class Habitica(object):
             msg = self.api.create_task(
                 'habit', habit, False, note, 'int', 1, True)
             self.habit_id[habit] = str(msg['_id'])  # capture new task ID
-            #if Habitica.debug: utils.showInfo("New habit created: %s" %self.habit_id[habit])
             if ah.settings.keep_log:
                 ah.log.debug("New habit created: %s" % self.habit_id[habit])
-            #if Habitica.debug: utils.showInfo(json.dumps(msg))
             if ah.settings.keep_log:
                 ah.log.debug(json.dumps(msg))
-            # self.reset_scorecounter(habit)
             self.missing[habit] = False
             self.habit_grabbed[habit] = True
         except:
@@ -355,17 +326,14 @@ class Habitica(object):
     def reset_scorecounter(self, habit):
         if ah.settings.keep_log:
             ah.log.debug("Begin function")
-        #if Habitica.debug: utils.showInfo("Resetting Scorecounter")
         if ah.settings.keep_log:
             ah.log.debug("Resetting Scorecounter")
         last_review_time = db_helper.latest_review_time()
-        #if Habitica.debug: utils.showInfo(str(last_review_time))
         if ah.settings.keep_log:
             ah.log.debug(str(last_review_time))
         self.hnote[habit] = {'scoresincedate': last_review_time,
                              'scorecount': 0, 'sched': ah.settings.sched_dict[habit]}
         self.habit_grabbed[habit] = True
-        #if Habitica.debug: utils.showInfo("reset: %s" % json.dumps(self.hnote[habit]))
         if ah.settings.keep_log:
             ah.log.debug("reset: %s" % json.dumps(self.hnote[habit]))
         try:
@@ -387,7 +355,6 @@ class Habitica(object):
             return True
         try:
             habitID = str(self.habit_id[habit])
-            #if Habitica.debug: utils.showInfo("grabbing scorecounter\n%s" % habitID)
             if ah.settings.keep_log:
                 ah.log.debug("grabbing scorecounter: %s" % habitID)
             response = self.api.task(habitID)
@@ -395,18 +362,15 @@ class Habitica(object):
                 if ah.settings.keep_log:
                     ah.log.error("End function returning: %s" % False)
                 return False
-            #if Habitica.debug: utils.showInfo(response['notes'])
             if ah.settings.keep_log:
                 ah.log.debug(response['notes'])
         except:
             # Check if habit exists
             if habit not in self.missing:
-                #if Habitica.debug: utils.showInfo("Habit not missing")
                 if ah.settings.keep_log:
                     ah.log.debug("Habit not missing")
             # Reset scorecount if habit is missing
             if self.missing[habit]:
-                #if Habitica.debug: utils.showInfo("Habit was missing")
                 if ah.settings.keep_log:
                     ah.log.debug("Habit was missing")
                 self.reset_scorecounter(habit)
@@ -414,13 +378,11 @@ class Habitica(object):
                 ah.log.error("End function returning: %s" % False)
             return False
         # Try to grab the scorecount and score since date
-        #if Habitica.debug: utils.showInfo("trying to load note string:\n%s" % response['notes'])
         if ah.settings.keep_log:
             ah.log.debug("trying to load note string: %s" % response['notes'])
         try:
             self.hnote[habit] = json.loads(response['notes'])
         except:
-            #if Habitica.debug: utils.showInfo("Reset 1")
             if ah.settings.keep_log:
                 ah.log.warning("Reset 1")
             self.reset_scorecounter(habit)
@@ -429,7 +391,6 @@ class Habitica(object):
             return True
         if 'scoresincedate' not in self.hnote[habit] or 'scorecount' not in self.hnote[habit]:
             # reset habit score counter if both keys not found
-            #if Habitica.debug: utils.showInfo("scorecounter missing keys")
             if ah.settings.keep_log:
                 ah.log.debug("scorecounter missing keys")
             self.reset_scorecounter(habit)
@@ -443,7 +404,6 @@ class Habitica(object):
             if ah.settings.keep_log:
                 ah.log.warning("End function returning: %s" % False)
             return False
-        #if Habitica.debug: utils.showInfo("Habit Grabbed")
         if ah.settings.keep_log:
             ah.log.debug("Habit Grabbed")
         if ah.settings.keep_log:
@@ -458,11 +418,9 @@ class Habitica(object):
             ah.log.debug("Begin function")
         try:
             habitID = self.habit_id[habit]
-            #if Habitica.debug: utils.showInfo("posting scorecounter")
             if ah.settings.keep_log:
                 ah.log.debug("posting scorecounter: %s" % self.hnote[habit])
             datastring = json.dumps(self.hnote[habit])
-            # self.hrpg_showInfo(datastring)
             data = {"notes": datastring}
             self.api.update_task(habitID, data)
             if ah.settings.keep_log:
@@ -476,7 +434,6 @@ class Habitica(object):
     def test_internet(self):
         if ah.settings.keep_log:
             ah.log.debug("Begin function")
-        #self.hrpg_tooltip("Testing Internet Connection")
         out = self.api.test_internet()
         if ah.settings.keep_log:
             ah.log.debug("End function returning: %s" % out)
@@ -519,7 +476,6 @@ class Habitica(object):
         if ah.settings.show_popup:
             self.hrpg_showInfo(hrpgresponse)
         else:
-            #             self.hrpg_tooltip("Huzzah! You Scored Points!")
             tooltip(_("Huzzah! You Scored Points!"), period=2500)
 
         # update levels
@@ -541,17 +497,14 @@ class Habitica(object):
             ah.log.debug("Begin function")
         # get user stats if we don't have them
         if 'lvl' not in self.stats:
-            #if Habitica.debug: utils.showInfo("lvl not in stats")
             if ah.settings.keep_log:
                 ah.log.warning("lvl not in stats")
             self.update_stats(False)
         # check habit if is is unchecked
         if not self.habit_grabbed[habit]:
-            #if Habitica.debug: utils.showInfo("%s habit not checked" % habit)
             if ah.settings.keep_log:
                 ah.log.debug("%s habit not checked" % habit)
             try:
-                #if Habitica.debug: utils.showInfo("Checking Habit Score Counter")
                 if ah.settings.keep_log:
                     ah.log.debug("Checking Habit Score Counter")
                 self.check_anki_habit(habit)
@@ -595,8 +548,6 @@ class Habitica(object):
                             drop_dialog = ""
                         else:
                             drop_dialog += "\n"
-                        #drop_text = msg['_tmp']['drop']['text']
-                        #drop_type = msg['_tmp']['drop']['type']
                         drop_dialog += str(msg['_tmp']['drop']['dialog'])
             except:
                 pass
@@ -623,25 +574,6 @@ class Habitica(object):
         new_mp = msg['mp']
         new_gp = msg['gp']
         new_hp = msg['hp']
-
-        # MOVED: These data collection functions now part of above while loop
-        # if msg['_tmp']:
-        # if 'streakBonus' in msg['_tmp']:
-        # streak
-        #streak_bonus = str(round((100 * msg['_tmp']['streakBonus']), 0))
-        # if 'crit' in msg['_tmp']:
-        # critical
-        #crit_multiplier = str(round((100 * msg['_tmp']['crit']), 0))
-        # if 'drop' in msg['_tmp'] and 'dialog' in msg['_tmp']['drop']:
-        # drop happened
-        #drop_text = msg['_tmp']['drop']['text']
-        #drop_type = msg['_tmp']['drop']['type']
-        #drop_dialog = msg['_tmp']['drop']['dialog']
-        # Update habit if it was just created
-        # DEPRICATED: Habits no longer created automatically for us in API v3
-        # if habit in self.missing and self.missing[habit]:
-        # if self.check_anki_habit(habit):
-        #self.missing[habit] = False
 
         out = self.make_score_message(
             new_lvl, new_xp, new_mp, new_gp, new_hp, streak_bonus, crit_multiplier, drop_dialog)
