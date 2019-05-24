@@ -1,12 +1,16 @@
-#Class for storing and sharing common data such as
+# Class for storing and sharing common data such as
 #	config and settings data
-import logging, logging.handlers, os
+import logging
+import logging.handlers
+import os
 
 
 class AnkiHabiticaCommon:
-	config = {} #dictionary for configuration
-	log = logging.Logger
-	class settings: pass #empty class for holding settings
+    config = {}  # dictionary for configuration
+    log = logging.Logger
+
+    class settings:
+        pass  # empty class for holding settings
 
 # I would have preferred to setup the log like below, but I get an
 # eror that "self" isn't defined, so I put it as its own function
@@ -23,23 +27,26 @@ class AnkiHabiticaCommon:
 #             self.log.setLevel(logging.DEBUG)
 #         else:
 #             self.log.setLevel(logging.ERROR)
-#             
+#
 #         logName = os.path.join(os.path.dirname(os.path.realpath(__file__)), "AnkiHabitica", "AnkiHabitica.log")
 #         fh = logging.handlers.RotatingFileHandler(logName, maxBytes=1e6, backupCount=5)
 #         fmt = logging.Formatter('%(asctime)s %(threadName)s %(levelname)s %(message)s')
 #         fh.setFormatter(fmt)
 #         self.log.addHandler(fh)
 
-def setupLog(ah):
-	    ah.log = logging.getLogger('AnkiHabitica')
-	    if ah.settings.debug:
-	        ah.log.setLevel(logging.DEBUG)
-	    else:
-	        ah.log.setLevel(logging.ERROR)
-	        
-	    logName = os.path.join(os.path.dirname(os.path.realpath(__file__)), "AnkiHabitica.log")
-	    fh = logging.handlers.RotatingFileHandler(logName, maxBytes=1e6, backupCount=5)
-	    fmt = logging.Formatter('%(asctime)s [%(threadName)14s:%(filename)18s:%(lineno)5s - %(funcName)30s()] %(levelname)8s: %(message)s')
-	    fh.setFormatter(fmt)
-	    ah.log.addHandler(fh)
 
+def setupLog(ah):
+    ah.log = logging.getLogger('AnkiHabitica')
+    if ah.settings.debug:
+        ah.log.setLevel(logging.DEBUG)
+    else:
+        ah.log.setLevel(logging.ERROR)
+
+    logName = os.path.join(os.path.dirname(
+        os.path.realpath(__file__)), "AnkiHabitica.log")
+    fh = logging.handlers.RotatingFileHandler(
+        logName, maxBytes=1e6, backupCount=5)
+    fmt = logging.Formatter(
+        '%(asctime)s [%(threadName)14s:%(filename)18s:%(lineno)5s - %(funcName)30s()] %(levelname)8s: %(message)s')
+    fh.setFormatter(fmt)
+    ah.log.addHandler(fh)
