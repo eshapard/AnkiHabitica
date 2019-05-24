@@ -153,11 +153,13 @@ class Habitica(object):
         try:
             user = self.get_user_object()
         except:
+            if ah.settings.keep_log:
+                ah.log.error("End function returning: %s" % False)
+            if ah.settings.debug:
+                raise
             if not silent:
                 self.hrpg_showInfo(
                     "Unable to log in to Habitica.\n\nCheck that you have the correct user-id and api-token in\n%s.\n\nThese should not be your username and password.\n\nPost at github.com/eshapard/AnkiHRPG if this issue persists." % (ah.conffile))
-            if ah.settings.keep_log:
-                ah.log.error("End function returning: %s" % False)
             return False
         self.name = user['profile']['name']
         self.stats = user['stats']
@@ -187,6 +189,8 @@ class Habitica(object):
         except:
             if ah.settings.keep_log:
                 ah.log.error("End function returning: %s" % False)
+            if ah.settings.debug:
+                raise
             return False
 
     def update_anki_habit(self, habit):
@@ -202,6 +206,8 @@ class Habitica(object):
         except:
             if ah.settings.keep_log:
                 ah.log.error("End function returning: %s" % False)
+            if ah.settings.debug:
+                raise
             return False
 
     # Check Anki Habit, make new one if it does not exist, and try to
@@ -219,6 +225,8 @@ class Habitica(object):
             except:
                 if ah.settings.keep_log:
                     ah.log.error("End function returning: %s" % False)
+                if ah.settings.debug:
+                    raise
                 return False
         else:
             habitID = self.habit_id[habit]
@@ -273,6 +281,8 @@ class Habitica(object):
                 ah.log.error("Could not retrieve task")
             if ah.settings.keep_log:
                 ah.log.error("End function returning: %s" % False)
+            if ah.settings.debug:
+                raise
             return False
         if response['down'] or response['attribute'] != "int":
             try:
@@ -283,10 +293,11 @@ class Habitica(object):
                     ah.log.debug("End function returning: %s" % True)
                 return True
             except:
-                hrpg_showInfo(
-                    "Your %s habit is not configured correctly yet.\nPlease set it to Up only and Mental attribute." % habit)
                 if ah.settings.keep_log:
                     ah.log.error("End function returning: %s" % False)
+                if ah.settings.debug:
+                    raise
+                hrpg_showInfo("Your %s habit is not configured correctly yet.\nPlease set it to Up only and Mental attribute." % habit)
                 return False
         if ah.settings.keep_log:
             ah.log.debug("Habit looks good")
@@ -321,6 +332,8 @@ class Habitica(object):
         except:
             if ah.settings.keep_log:
                 ah.log.error("End function returning: %s" % False)
+            if ah.settings.debug:
+                raise
             return False
 
     def reset_scorecounter(self, habit):
@@ -344,6 +357,8 @@ class Habitica(object):
         except:
             if ah.settings.keep_log:
                 ah.log.error("End function returning: %s" % False)
+            if ah.settings.debug:
+                raise
             return False
 
     def grab_scorecounter(self, habit):
@@ -376,6 +391,8 @@ class Habitica(object):
                 self.reset_scorecounter(habit)
             if ah.settings.keep_log:
                 ah.log.error("End function returning: %s" % False)
+            if ah.settings.debug:
+                raise
             return False
         # Try to grab the scorecount and score since date
         if ah.settings.keep_log:
@@ -550,7 +567,8 @@ class Habitica(object):
                             drop_dialog += "\n"
                         drop_dialog += str(msg['_tmp']['drop']['dialog'])
             except:
-                pass
+                if ah.settings.debug:
+                    raise
             i += 1
 
         if not success:  # exit if we failed all 3 times
@@ -614,6 +632,8 @@ class Habitica(object):
         except:
             if ah.settings.keep_log:
                 ah.log.error("End function returning: %s" % False)
+            if ah.settings.debug:
+                raise
             return False
 
         if ah.settings.keep_log:
