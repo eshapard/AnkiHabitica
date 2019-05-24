@@ -138,7 +138,7 @@ for f in ["Anki_HRPG.py", "ankiHRPG.py", "ankiHRPG_v0.5.py", "ankiHRPG_v1.0.py",
 ah.old_conffile = os.path.join(os.path.dirname(
     os.path.realpath(__file__)), ".habitrpg.conf")
 ah.conffile = os.path.join(os.path.dirname(
-    os.path.realpath(__file__)), "AnkiHabitica", "AnkiHabitica.conf")
+    os.path.realpath(__file__)), "user_files", "AnkiHabitica.conf")
 
 # Handle old config files
 ah.old_config_exists = False
