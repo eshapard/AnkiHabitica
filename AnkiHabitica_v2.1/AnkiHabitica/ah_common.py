@@ -1,7 +1,7 @@
 # Class for storing and sharing common data such as
 #	config and settings data
-import logging
-import logging.handlers
+from . import logging
+from .logging import handlers
 import os
 
 
