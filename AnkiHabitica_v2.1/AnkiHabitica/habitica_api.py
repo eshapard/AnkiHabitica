@@ -5,6 +5,7 @@ import urllib.parse
 import urllib.request
 import urllib.parse
 import urllib.error
+import ssl
 import json
 import random
 from .ah_common import AnkiHabiticaCommon as ah
@@ -29,6 +30,7 @@ class HabiticaAPI(object):
             ah.log.debug("End function")
 
     def v3_request(self, method, path, data={'dummy': 'dummy'}, t=0):
+        context = ssl._create_unverified_context()
         # Dummy data needed for post, put, and delete commands now.
         if ah.settings.keep_log:
             ah.log.debug("Begin function")
@@ -56,9 +58,9 @@ class HabiticaAPI(object):
             req.get_method = lambda: "POST"  # Needed for no-data posts
 
         if t:
-            response = json.load(urllib.request.urlopen(req, None, t))
+            response = json.load(urllib.request.urlopen(req, None, t, context))
         else:
-            response = json.load(urllib.request.urlopen(req))
+            response = json.load(urllib.request.urlopen(req,context))
 
         if response['success']:
             out = response['data']
