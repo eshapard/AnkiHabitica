@@ -29,6 +29,17 @@ For use with Habitica: http://habitica.com
 3. Open the Habitca API Settings page: https://habitica.com/user/settings/api
 4. Run "Tools >> AnkiHabitica >> Setup AnkiHabitica" and enter *User ID* and *API Token* that get from HabitRPG
 
+## Frequently Asked Questions
+
+### How could I use AnkiHabitica in AnkiDroid?
+
+The AnkiHabitica only runs on the desktop version of Anki, but as long as you sync your reviews on both ankidroid and the desktop version with ankiweb, the add-on will catch all the reviews.
+
+### Why there's are some weird text in the notes of the Habit
+
+That's how the addon keeps track of things across multiple devices and multiple sessions.
+You must keep that there.
+
 ## USE AND CUSTOMIZATION
 
 See the wiki for a detailed description: https://github.com/eshapard/AnkiHabitica/wiki
