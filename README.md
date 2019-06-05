@@ -8,12 +8,7 @@ For Anki 2.0 see branch [anki2.0](https://github.com/eshapard/AnkiHabitica/tree/
 
 See the wiki for more details: https://github.com/eshapard/AnkiHabitica/wiki
 
-For use with Habitica (formerly, HabitRPG): http://habitica.com
-
-Inspired by: https://github.com/Pherr/HabitRPG-Anki-Addon
-
-## NEW NAME!
-Formerly, AnkiHabitica was called AnkiHRPG. Habitica used to be called HabitRPG, and the name AnkiHRPG made perfect sense. However, with the name change, newer Habiticans might not recognize AnkiHRPG as a Habitica-related addon.
+For use with Habitica: http://habitica.com
 
 ## INSTALLATION
 
