@@ -17,33 +17,22 @@ Formerly, AnkiHabitica was called AnkiHRPG. Habitica used to be called HabitRPG,
 
 ## INSTALLATION
 
-### The Easy Way:
+### The Easy Way
 
-* In Anki, go to Tools >> Add-ons >> Browse & Install
-* Paste in the following code: 954979168
-* Restart Anki
-* After restart, go to Tools >> Ankihabitica >> Setup
-* Open the Habitca API Settings page: https://habitica.com/#/options/settings/api
-* Copy/paste your **User ID**
-* Copy/paste your **API Token**
-* A new Habitica Habit will be created called Anki Points (after you do some cards!)
+1. In Anki, go to Tools >> Add-ons >> Browse & Install
+2. Paste in the following code: 1758045507
+3. Restart Anki
+4. After restart, go to Tools >> Ankihabitica >> Setup
+5. Open the Habitca API Settings page: https://habitica.com/user/settings/api
+6. Enter *User ID* and *API Token* that get from HabitRPG
+7. A new Habitica Habit will be created called Anki Points (after you do some cards!)
 
 ### Manual Installation
 
-#### Linux:
-
-* Install ankihabitica.py and the AnkiHabitica subdirectory to $HOME/Anki/addons/ directory
-* Start Ank and run Tools >> AnkiHabitica >> Setup AnkiHabitica
- * enter userID and apiKey from HabitRPG
-
-Habitica userID and apiKey: These are NOT your username and password! See the API section of the settings menu in Habitica: https://habitica.com/#/options/settings/api
-
-
-#### Windows and Mac:
-
-* Install ankihabitica.py and the AnkiHabitica subdirectory to [your home directory]/Documents/Anki/addons directory
-* Start Ank and run Tools >> Setup HabitRPG
- * enter userID and apiKey from HabitRPG
+1. Download the add-on file in https://github.com/eshapard/AnkiHabitica/releases
+2. Start Anki and in "Tools >> Add-ons >> Install from files..." select file that you download in the previous step.
+3. Open the Habitca API Settings page: https://habitica.com/user/settings/api
+4. Run "Tools >> AnkiHabitica >> Setup AnkiHabitica" and enter *User ID* and *API Token* that get from HabitRPG
 
 ## USE AND CUSTOMIZATION
 
