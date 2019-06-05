@@ -17,37 +17,32 @@ Formerly, AnkiHabitica was called AnkiHRPG. Habitica used to be called HabitRPG,
 
 ### The Easy Way:
 
-* In Anki, go to Tools >> Add-ons >> Browse & Install
-* Paste in the following code: 954979168 
-* Restart Anki
-* After restart, go to Tools >> Ankihabitica >> Setup
-* Open the Habitca API Settings page: https://habitica.com/#/options/settings/api
-* Copy/paste your **User ID** 
-* Copy/paste your **API Token**
-* A new Habitica Habit will be created called Anki Points (after you do some cards!)
+1. In Anki, go to Tools >> Add-ons >> Browse & Install
+2. Paste in the following code: 954979168
+3. Restart Anki
+4. After restart, go to Tools >> Ankihabitica >> Setup
+5. Open the Habitca API Settings page: https://habitica.com/user/settings/api
+6. Enter *User ID* and *API Token* that get from HabitRPG
+7. A new Habitica Habit will be created called Anki Points (after you do some cards!)
 
 ### Manual Installation
-Stable version: 2.0
 
 #### Linux:
 
-* Install ankihabitica.py and the AnkiHabitica subdirectory to $HOME/Anki/addons/ directory
-* Start Ank and run Tools >> AnkiHabitica >> Setup AnkiHabitica
- * enter userID and apiKey from HabitRPG
-     
-Habitica userID and apiKey: These are NOT your username and password! See the API section of the settings menu in Habitica: https://habitica.com/#/options/settings/api
-
+1. Copy the AnkiHabitica subdirectory to $HOME/.local/share/Anki2/addons/ directory
+2. Open the Habitca API Settings page: https://habitica.com/user/settings/api
+3. Run "Tools >> AnkiHabitica >> Setup AnkiHabitica" and enter *User ID* and *API Token* that get from HabitRPG
 
 #### Windows and Mac:
 
-* Install ankihabitica.py and the AnkiHabitica subdirectory to [your home directory]/Documents/Anki/addons directory
-* Start Ank and run Tools >> Setup HabitRPG
- * enter userID and apiKey from HabitRPG
+1. Copy the AnkiHabitica subdirectory to [your home directory]/Documents/Anki/addons directory
+2. Open the Habitca API Settings page: https://habitica.com/user/settings/api
+3. Run "Tools >> AnkiHabitica >> Setup AnkiHabitica" and enter *User ID* and *API Token* that get from HabitRPG
 
 ## USE AND CUSTOMIZATION
 
 See the wiki for a detailed description: https://github.com/eshapard/AnkiHabitica/wiki
-            
+
 ## General Anki Tips
 
 I occasionally post tips on using Anki and calibrating its settings at https://eshapard.github.io/anki/
