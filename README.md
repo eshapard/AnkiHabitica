@@ -31,11 +31,11 @@ For use with Habitica: http://habitica.com
 
 ## Frequently Asked Questions
 
-### How could I use AnkiHabitica in AnkiDroid?
+### How can I use AnkiHabitica in AnkiDroid?
 
 The AnkiHabitica only runs on the desktop version of Anki, but as long as you sync your reviews on both ankidroid and the desktop version with ankiweb, the add-on will catch all the reviews.
 
-### Why there's are some weird text in the notes of the Habit
+### Why are there some weird text in the notes of the Habit
 
 That's how the addon keeps track of things across multiple devices and multiple sessions.
 You must keep that there.
