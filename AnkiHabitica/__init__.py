@@ -26,7 +26,7 @@ from anki.utils import intTime
 from . import db_helper, habitica_class
 from .ah_common import AnkiHabiticaCommon as ah, setupLog
 
-__version__ = "2.1.0"
+__version__ = "2.1.1"
 
 
 class ah_settings:  # tiny class for holding settings
