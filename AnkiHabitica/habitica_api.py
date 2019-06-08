@@ -58,9 +58,9 @@ class HabiticaAPI(object):
             req.get_method = lambda: "POST"  # Needed for no-data posts
 
         if t:
-            response = json.load(urllib.request.urlopen(req, None, t, context))
+            response = json.load(urllib.request.urlopen(req, None, t, context=context))
         else:
-            response = json.load(urllib.request.urlopen(req,context))
+            response = json.load(urllib.request.urlopen(req, context=context))
 
         if response['success']:
             out = response['data']
