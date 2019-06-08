@@ -54,6 +54,8 @@ class ah_settings:  # tiny class for holding settings
     download_avatar = False
     # debug mode that raise all exception
     debug = False
+    # name of habit
+    habit = "Anki Points"
     ############# END USER CONFIGURABLE SETTINGS #############
 
 
@@ -71,9 +73,6 @@ ah.settings.allow_threads = True
 setupLog(ah)
 if ah.settings.keep_log:
     ah.log.info('Logfile initialized')
-
-# list of habits used
-ah.settings.habitlist = ["Anki Points"]
 
 
 # Set some initial settings whenever we load a profile
@@ -176,9 +175,12 @@ def read_conf_file(conffile):
     for i in ['score', 'oldscore']:
         if i not in ah.config[ah.settings.profile]:
             ah.config[ah.settings.profile][i] = 0
-    # add habit_id dictionary if it does not exist
-    if 'habit_id' not in ah.config[ah.settings.profile]:
-        ah.config[ah.settings.profile]['habit_id'] = {}
+    # add habit_id if it does not exist
+    try:
+        if ah.config[ah.settings.profile]['habit_id'].__class__ == dict:
+            ah.config[ah.settings.profile]['habit_id'] = ah.config[ah.settings.profile]['habit_id'][ah.settings.habit]
+    except:
+        ah.config[ah.settings.profile]['habit_id'] = None
     ah.settings.configured = True
     if ah.settings.keep_log:
         ah.log.debug("Settings contents: %s" % ah.settings)
@@ -322,9 +324,9 @@ def compare_score_to_db():
         return False
 
     if ah.settings.initialized:
-        if 'Anki Points' in ah.habitica.hnote and ah.habitica.hnote['Anki Points']['scoresincedate']:
-            score_count = ah.habitica.hnote['Anki Points']['scorecount']
-            start_date = ah.habitica.hnote['Anki Points']['scoresincedate']
+        if ah.habitica.hnote != None and ah.habitica.hnote['scoresincedate']:
+            score_count = ah.habitica.hnote['scorecount']
+            start_date = ah.habitica.hnote['scoresincedate']
             if ah.settings.keep_log:
                 ah.log.debug("From Habitica note. Score count: %s, Start date: %s (%s)" % (
                     score_count, start_date, db_helper.prettyTime(start_date)))
@@ -454,28 +456,24 @@ def make_habit_progbar():
 def initialize_habitica_class():
     if ah.settings.keep_log:
         ah.log.debug("Begin function")
-    # Create dictionary of reward schedules for habits
-    ah.settings.sched_dict = {}
-    for habit in ah.settings.habitlist:
-        ah.settings.sched_dict[habit] = ah.settings.sched
 
     ah.habitica = habitica_class.Habitica()
     ah.settings.initialized = True
     # Keep track of the reward schedule, so if it ever changes, we reset
     # the scorecounter and scoresincedate to prevent problems
-    for habit in ah.settings.habitlist:
-        # set up oldsched dict in config
-        if 'oldsched' not in ah.config[ah.settings.profile]:
-            ah.config[ah.settings.profile]['oldsched'] = {}
-        # set oldsched for current habit of not there
-        if habit not in ah.config[ah.settings.profile]['oldsched']:
-            ah.config[ah.settings.profile]['oldsched'][habit] = ah.settings.sched_dict[habit]
-        # Find habits with a changed reward scedule
-        if ah.config[ah.settings.profile]['oldsched'][habit] != ah.settings.sched_dict[habit]:
-            # reset scorecounter and scoresincedate
-            if ah.habitica.reset_scorecounter(habit):
-                # set oldsched to current sched
-                ah.config[ah.settings.profile]['oldsched'][habit] = ah.settings.sched_dict[habit]
+    habit = ah.settings.habit
+    # set up oldsched dict in config
+    try:
+        if ah.config[ah.settings.profile]['oldsched'].__class__ == dict:
+            ah.config[ah.settings.profile]['oldsched'] = ah.config[ah.settings.profile]['oldsched'][ah.settings.habit]
+    except:
+        ah.config[ah.settings.profile]['oldsched'] = ah.settings.sched
+    # Find habits with a changed reward scedule
+    if ah.config[ah.settings.profile]['oldsched'] != ah.settings.sched:
+        # reset scorecounter and scoresincedate
+        if ah.habitica.reset_scorecounter():
+            # set oldsched to current sched
+            ah.config[ah.settings.profile]['oldsched'] = ah.settings.sched
     if ah.settings.keep_log:
         ah.log.debug("End function")
 
@@ -531,9 +529,7 @@ def ready_or_not():
         except:
             pass
         # If we don't have any habits grabbed, attempt to grab them
-        if ah.settings.keep_log:
-            ah.log.info("Hnote length: %s" % len(ah.habitica.hnote))
-        if len(ah.habitica.hnote) == 0:
+        if ah.habitica.hnote == None:
             habitica_class.Habitica.offline_recover_attempt += 1
             if habitica_class.Habitica.offline_recover_attempt % 3 == 0:
                 if ah.settings.keep_log:
@@ -586,7 +582,7 @@ def hrpg_realtime(dummy=None):
                 "Hmmm...\n\nI can't connect to Habitica. Perhaps your internet is down.\n\nI'll remember your points and try again later.")
 
         if ah.settings.internet:
-            ah.habitica.earn_points("Anki Points")
+            ah.habitica.earn_points()
             if ah.config[ah.settings.profile]['score'] < 0:
                 ah.config[ah.settings.profile]['score'] = 0
     if ah.settings.keep_log:
@@ -638,7 +634,7 @@ def score_backlog(silent=False):
             ah.log.warning("End function returning: %s" % False)
         return False
 
-    ah.habitica.grab_scorecounter('Anki Points')
+    ah.habitica.grab_scorecounter()
 
     # Compare database to scored points
     if compare_score_to_db():
@@ -661,7 +657,7 @@ def score_backlog(silent=False):
         mw.progress.start(max=numScores, label=progressLabel)
         while i <= 2*numScores and ah.config[ah.settings.profile]['score'] >= ah.settings.sched and ah.settings.internet:
             try:
-                ah.habitica.silent_earn_points("Anki Points")
+                ah.habitica.silent_earn_points()
                 ah.config[ah.settings.profile]['score'] -= ah.settings.sched
                 i += 1
                 p += 1
@@ -677,14 +673,14 @@ def score_backlog(silent=False):
                         (p, "" if p == 1 else "s"))
         if ah.settings.keep_log:
             ah.log.info("New scorecount: %s" %
-                        ah.habitica.hnote['Anki Points']['scorecount'])
+                        ah.habitica.hnote['scorecount'])
         if ah.settings.keep_log:
             ah.log.info("New config score: %s" %
                         ah.config[ah.settings.profile]['score'])
-        ah.habitica.hnote['Anki Points']['scorecount'] = habitica_class.Habitica.offline_scorecount = 0
-        ah.habitica.hnote['Anki Points']['scoresincedate'] = habitica_class.Habitica.offline_sincedate = db_helper.latest_review_time()
-        ah.config[ah.settings.profile]['score'] = ah.habitica.hnote['Anki Points']['scoresincedate']
-        ah.habitica.post_scorecounter('Anki Points')
+        ah.habitica.hnote['scorecount'] = habitica_class.Habitica.offline_scorecount = 0
+        ah.habitica.hnote['scoresincedate'] = habitica_class.Habitica.offline_sincedate = db_helper.latest_review_time()
+        ah.config[ah.settings.profile]['score'] = ah.habitica.hnote['scoresincedate']
+        ah.habitica.post_scorecounter()
         runHook("HabiticaAfterScore")
         save_stats(None, None)
     if ah.settings.keep_log:
@@ -737,7 +733,7 @@ def grab_profile():
         if ah.settings.keep_log:
             ah.log.info("adding %s to config dict" % ah.settings.profile)
     ready_or_not()
-    if ah.settings.check_db_on_profile_load and ah.settings.configured and ah.habitica.grab_scorecounter('Anki Points') and compare_score_to_db():
+    if ah.settings.check_db_on_profile_load and ah.settings.configured and ah.habitica.grab_scorecounter() and compare_score_to_db():
         #         TODO: the idea was to check the db (fast) then then ask the user if they wanted to sync iwth Habitica (slow), but
         #                there's an issue whree ['score'] shows a different value after the above call to compare_score_to_db() then
         #                what is shwon when score_backlog() is called. This discrepency is easy to see in the log:

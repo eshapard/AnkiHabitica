@@ -40,11 +40,11 @@ class Habitica(object):
         self.mp = 0
         self.mt = 0
         self.stats = {}
-        self.hnote = {}
-        self.habit_grabbed = {}  # marked true when we get scorecounter.
+        self.hnote = None
+        self.habit_grabbed = False  # marked true when we get scorecounter.
         # holder for habit IDs
         self.habit_id = ah.config[ah.settings.profile]['habit_id']
-        self.missing = {}  # holds missing habits
+        self.missing = False  # holds missing habits
         self.init_update()  # check habits, grab user object, get avatar
         if ah.settings.keep_log:
             ah.log.debug("End function")
@@ -52,14 +52,14 @@ class Habitica(object):
     def init_update(self):
         if ah.settings.keep_log:
             ah.log.debug("Begin function")
-        for habit in ah.settings.habitlist:
-            self.habit_grabbed[habit] = False
-            # create a thread to check the habit as to not slow down
-            # the startup process
-            if Habitica.allow_threads:
-                _thread.start_new_thread(self.check_anki_habit, (habit,))
-            else:
-                self.check_anki_habit(habit)
+        self.habit_grabbed = False
+        # create a thread to check the habit as to not slow down
+        # the startup process
+        if Habitica.allow_threads:
+            _thread.start_new_thread(self.check_anki_habit, ())
+        else:
+            self.check_anki_habit()
+
         # Grab user object in the background
         if Habitica.allow_threads:
             _thread.start_new_thread(self.init_grab_stats, ())
@@ -177,12 +177,11 @@ class Habitica(object):
             ah.log.debug("End function returning: %s" % True)
         return True
 
-    def score_anki_points(self, habit):
+    def score_anki_points(self):
         if ah.settings.keep_log:
             ah.log.debug("Begin function")
         try:
-            habitID = self.habit_id[habit]
-            out = self.api.perform_task(habitID, "up")
+            out = self.api.perform_task(self.habit_id, "up")
             if ah.settings.keep_log:
                 ah.log.debug("End function returning: %s" % out)
             return out
@@ -193,13 +192,12 @@ class Habitica(object):
                 raise
             return False
 
-    def update_anki_habit(self, habit):
+    def update_anki_habit(self):
         if ah.settings.keep_log:
             ah.log.debug("Begin function")
         try:
-            habitID = self.habit_id[habit]
             data = {'up': True, 'down': False, 'attribute': 'int'}
-            out = self.api.update_task(habitID, data)
+            out = self.api.update_task(self.habit_id, data)
             if ah.settings.keep_log:
                 ah.log.debug("End function returning: %s" % out)
             return out
@@ -212,16 +210,17 @@ class Habitica(object):
 
     # Check Anki Habit, make new one if it does not exist, and try to
     #    grab the note string.
-    def check_anki_habit(self, habit):
+    def check_anki_habit(self):
+        habit = ah.settings.habit
         if ah.settings.keep_log:
             ah.log.debug("Begin function")
         found = False
         if ah.settings.keep_log:
             ah.log.debug("checking %s" % habit)
-        if habit not in self.habit_id:
+        if self.habit_id == None:
             try:
-                self.habit_id[habit] = self.api.find_habit_id(habit)
-                habitID = self.habit_id[habit]
+                self.habit_id = self.api.find_habit_id(habit)
+                habitID = self.habit_id
             except:
                 if ah.settings.keep_log:
                     ah.log.error("End function returning: %s" % False)
@@ -229,18 +228,18 @@ class Habitica(object):
                     raise
                 return False
         else:
-            habitID = self.habit_id[habit]
+            habitID = self.habit_id
             # We have an ID, but we may want to check that the habit still exists
         if ah.settings.keep_log:
             ah.log.debug("HabitID: %s" % habitID)
         if not habitID:  # find_habit_id returned False; habit not found!
             if ah.settings.keep_log:
                 ah.log.warning("Habit ID Missing")
-            del self.habit_id[habit]
-            self.missing[habit] = True
+            self.habit_id = None
+            self.missing = True
             if ah.settings.keep_log:
                 ah.log.warning("Task not found")
-            self.create_missing_habit(habit)
+            self.create_missing_habit()
             if ah.settings.keep_log:
                 ah.log.warning("End function returning: %s" % False)
             return False
@@ -256,15 +255,15 @@ class Habitica(object):
                     if str(t['id']) == str(habitID):
                         found = True
                 if found:
-                    self.missing[habit] = False
+                    self.missing = False
                     del tasks
                     if ah.settings.keep_log:
                         ah.log.debug("Task found")
                 else:
-                    self.missing[habit] = True
+                    self.missing = True
                     if ah.settings.keep_log:
                         ah.log.warning("Task not found")
-                    self.create_missing_habit(habit)
+                    self.create_missing_habit()
                     del tasks
                     if ah.settings.keep_log:
                         ah.log.warning("End function returning: %s" % False)
@@ -302,13 +301,14 @@ class Habitica(object):
         if ah.settings.keep_log:
             ah.log.debug("Habit looks good")
         # Grab scorecounter from habit
-        out = self.grab_scorecounter(habit)
+        out = self.grab_scorecounter()
         if ah.settings.keep_log:
             ah.log.debug("End function returning: %s" % out)
         return out
 
     # Create a missing habits
-    def create_missing_habit(self, habit):
+    def create_missing_habit(self):
+        habit = ah.settings.habit
         if ah.settings.keep_log:
             ah.log.debug("Begin function")
         try:
@@ -317,18 +317,18 @@ class Habitica(object):
                 ah.log.debug("Trying to create %s habit" % habit)
             # create task on habitica
             curtime = intTime()
-            self.hnote[habit] = {'scoresincedate': curtime,
-                                 'scorecount': 0, 'sched': ah.settings.sched_dict[habit]}
-            note = json.dumps(self.hnote[habit])
+            self.hnote = {'scoresincedate': curtime,
+                                 'scorecount': 0, 'sched': ah.settings.sched}
+            note = json.dumps(self.hnote)
             msg = self.api.create_task(
                 'habit', habit, False, note, 'int', 1, True)
-            self.habit_id[habit] = str(msg['_id'])  # capture new task ID
+            self.habit_id = str(msg['_id'])  # capture new task ID
             if ah.settings.keep_log:
-                ah.log.debug("New habit created: %s" % self.habit_id[habit])
+                ah.log.debug("New habit created: %s" % self.habit_id)
             if ah.settings.keep_log:
                 ah.log.debug(json.dumps(msg))
-            self.missing[habit] = False
-            self.habit_grabbed[habit] = True
+            self.missing = False
+            self.habit_grabbed = True
         except:
             if ah.settings.keep_log:
                 ah.log.error("End function returning: %s" % False)
@@ -336,7 +336,7 @@ class Habitica(object):
                 raise
             return False
 
-    def reset_scorecounter(self, habit):
+    def reset_scorecounter(self):
         if ah.settings.keep_log:
             ah.log.debug("Begin function")
         if ah.settings.keep_log:
@@ -344,13 +344,13 @@ class Habitica(object):
         last_review_time = db_helper.latest_review_time()
         if ah.settings.keep_log:
             ah.log.debug(str(last_review_time))
-        self.hnote[habit] = {'scoresincedate': last_review_time,
-                             'scorecount': 0, 'sched': ah.settings.sched_dict[habit]}
-        self.habit_grabbed[habit] = True
+        self.hnote = {'scoresincedate': last_review_time,
+                             'scorecount': 0, 'sched': ah.settings.sched}
+        self.habit_grabbed = True
         if ah.settings.keep_log:
-            ah.log.debug("reset: %s" % json.dumps(self.hnote[habit]))
+            ah.log.debug("reset: %s" % json.dumps(self.hnote))
         try:
-            self.post_scorecounter(habit)
+            self.post_scorecounter()
             if ah.settings.keep_log:
                 ah.log.debug("End function returning: %s" % True)
             return True
@@ -361,83 +361,64 @@ class Habitica(object):
                 raise
             return False
 
-    def grab_scorecounter(self, habit):
+    def grab_scorecounter(self):
         if ah.settings.keep_log:
             ah.log.debug("Begin function")
-        if self.habit_grabbed[habit]:
+        if self.habit_grabbed:
             if ah.settings.keep_log:
                 ah.log.debug("End function returning: %s" % True)
             return True
-        try:
-            habitID = str(self.habit_id[habit])
-            if ah.settings.keep_log:
-                ah.log.debug("grabbing scorecounter: %s" % habitID)
-            response = self.api.task(habitID)
-            if not habitID:
-                if ah.settings.keep_log:
-                    ah.log.error("End function returning: %s" % False)
-                return False
-            if ah.settings.keep_log:
-                ah.log.debug(response['notes'])
-        except:
-            # Check if habit exists
-            if habit not in self.missing:
-                if ah.settings.keep_log:
-                    ah.log.debug("Habit not missing")
-            # Reset scorecount if habit is missing
-            if self.missing[habit]:
-                if ah.settings.keep_log:
-                    ah.log.debug("Habit was missing")
-                self.reset_scorecounter(habit)
-            if ah.settings.keep_log:
-                ah.log.error("End function returning: %s" % False)
-            if ah.settings.debug:
-                raise
-            return False
+        if self.habit_id == None:
+            self.check_anki_habit()
+        if ah.settings.keep_log:
+            ah.log.debug("grabbing scorecounter: %s" % str(self.habit_id))
+        response = self.api.task(self.habit_id)
+        if ah.settings.keep_log:
+            ah.log.debug(response['notes'])
         # Try to grab the scorecount and score since date
         if ah.settings.keep_log:
             ah.log.debug("trying to load note string: %s" % response['notes'])
         try:
-            self.hnote[habit] = json.loads(response['notes'])
+            self.hnote = json.loads(response['notes'])
         except:
             if ah.settings.keep_log:
                 ah.log.warning("Reset 1")
-            self.reset_scorecounter(habit)
+            self.reset_scorecounter()
             if ah.settings.keep_log:
                 ah.log.warning("End function returning: %s" % True)
             return True
-        if 'scoresincedate' not in self.hnote[habit] or 'scorecount' not in self.hnote[habit]:
+        if 'scoresincedate' not in self.hnote or 'scorecount' not in self.hnote:
             # reset habit score counter if both keys not found
             if ah.settings.keep_log:
                 ah.log.debug("scorecounter missing keys")
-            self.reset_scorecounter(habit)
+            self.reset_scorecounter()
             if ah.settings.keep_log:
                 ah.log.warning("End function returning: %s" % False)
             return False
         # reset if sched is different from last sched or is missing
         # this should prevent problems caused by changing the reward schedule
-        if 'sched' not in self.hnote[habit] or (int(self.hnote[habit]['sched']) != int(ah.settings.sched_dict[habit])):
-            self.reset_scorecounter(habit)
+        if 'sched' not in self.hnote or (int(self.hnote['sched']) != int(ah.settings.sched)):
+            self.reset_scorecounter()
             if ah.settings.keep_log:
                 ah.log.warning("End function returning: %s" % False)
             return False
         if ah.settings.keep_log:
             ah.log.debug("Habit Grabbed")
         if ah.settings.keep_log:
-            ah.log.debug("Habit note: %s" % self.hnote[habit])
-        self.habit_grabbed[habit] = True
+            ah.log.debug("Habit note: %s" % self.hnote)
+        self.habit_grabbed = True
         if ah.settings.keep_log:
             ah.log.debug("End function returning: %s" % True)
         return True
 
-    def post_scorecounter(self, habit):
+    def post_scorecounter(self):
         if ah.settings.keep_log:
             ah.log.debug("Begin function")
         try:
-            habitID = self.habit_id[habit]
+            habitID = self.habit_id
             if ah.settings.keep_log:
-                ah.log.debug("posting scorecounter: %s" % self.hnote[habit])
-            datastring = json.dumps(self.hnote[habit])
+                ah.log.debug("posting scorecounter: %s" % self.hnote)
+            datastring = json.dumps(self.hnote)
             data = {"notes": datastring}
             self.api.update_task(habitID, data)
             if ah.settings.keep_log:
@@ -509,7 +490,8 @@ class Habitica(object):
             ah.log.debug("End function returning: %s" % True)
         return True
 
-    def earn_points(self, habit):
+    def earn_points(self):
+        habit = ah.settings.habit
         if ah.settings.keep_log:
             ah.log.debug("Begin function")
         # get user stats if we don't have them
@@ -518,13 +500,13 @@ class Habitica(object):
                 ah.log.warning("lvl not in stats")
             self.update_stats(False)
         # check habit if is is unchecked
-        if not self.habit_grabbed[habit]:
+        if not self.habit_grabbed:
             if ah.settings.keep_log:
                 ah.log.debug("%s habit not checked" % habit)
             try:
                 if ah.settings.keep_log:
                     ah.log.debug("Checking Habit Score Counter")
-                self.check_anki_habit(habit)
+                self.check_anki_habit()
             except:
                 pass
         crit_multiplier = None
@@ -536,10 +518,10 @@ class Habitica(object):
         success = False
         while i < 3 and ah.config[ah.settings.profile]['score'] >= ah.settings.sched and ah.settings.internet:
             try:
-                msg = self.score_anki_points(habit)
+                msg = self.score_anki_points()
                 if msg['lvl']:  # Make sure we really got a response
                     success = True
-                    self.hnote[habit]['scorecount'] += 1
+                    self.hnote['scorecount'] += 1
                     ah.config[ah.settings.profile]['score'] -= ah.settings.sched
                 # Collect message strings
                 if msg['_tmp']:
@@ -580,9 +562,9 @@ class Habitica(object):
             return False
         # Post scorecounter to Habit note field
         if Habitica.allow_post_scorecounter_thread:
-            _thread.start_new_thread(self.post_scorecounter, (habit,))
+            _thread.start_new_thread(self.post_scorecounter, ())
         else:
-            self.post_scorecounter(habit)
+            self.post_scorecounter()
 
         # Gather new levels from last successful msg
         new_lvl = msg['lvl']
@@ -614,19 +596,19 @@ class Habitica(object):
         return string
 
     # Silent Version of Earn Points
-    def silent_earn_points(self, habit):
+    def silent_earn_points(self):
         if ah.settings.keep_log:
             ah.log.debug("Begin function")
         # check habit if is is unchecked
-        if not self.habit_grabbed[habit]:
+        if not self.habit_grabbed:
             try:
-                self.check_anki_habit(habit)
-                self.grab_scorecounter(habit)
+                self.check_anki_habit()
+                self.grab_scorecounter()
             except:
                 pass
         try:
-            self.score_anki_points(habit)
-            self.hnote[habit]['scorecount'] += 1
+            self.score_anki_points()
+            self.hnote['scorecount'] += 1
         except:
             if ah.settings.keep_log:
                 ah.log.error("End function returning: %s" % False)
