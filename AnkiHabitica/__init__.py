@@ -190,6 +190,7 @@ def read_conf_file(conffile):
 def save_stats(x=None, y=None):
     if ah.settings.keep_log:
         ah.log.debug("Begin function")
+    os.makedirs(os.path.dirname(ah.conffile), exist_ok=True)
     json.dump(ah.config, open(ah.conffile, 'w'))
     if ah.settings.keep_log:
         ah.log.debug("End function")
