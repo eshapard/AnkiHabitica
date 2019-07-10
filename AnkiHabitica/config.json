@@ -1,0 +1,18 @@
+{
+  "barcolor": "#603960",
+  "barbgcolor": "#BFBFBF",
+  "check_db_on_profile_load": true,
+  "debug": false,
+  "deckpoints": 0,
+  "download_avatar": false,
+  "habit": "Anki Points",
+  "keep_log": false,
+  "learned_eq": 2,
+  "matured_eq": 2,
+  "sched": 12,
+  "show_mini_stats": true,
+  "show_popup": true,
+  "step": 1,
+  "timeboxpoints": 1,
+  "tries_eq": 2
+}

@@ -21,18 +21,18 @@ class HabiticaAPI(object):
     TYPE_REWARD = "reward"
 
     def __init__(self, user_id, api_key):
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
         self.user_id = user_id
         self.api_key = api_key
         self.v3_url = "https://habitica.com/api/v3/"
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("End function")
 
     def v3_request(self, method, path, data={'dummy': 'dummy'}, t=0):
         context = ssl._create_unverified_context()
         # Dummy data needed for post, put, and delete commands now.
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
         path = path if not path.startswith("/") else path[1:]
         path = urllib.parse.quote(path, '/')
@@ -64,40 +64,40 @@ class HabiticaAPI(object):
 
         if response['success']:
             out = response['data']
-            if ah.settings.keep_log:
+            if ah.user_settings["keep_log"]:
                 ah.log.debug("End function returning: %s" % out)
             return out
         else:
-            if ah.settings.keep_log:
+            if ah.user_settings["keep_log"]:
                 ah.log.error("End function returning: %s" % False)
             return False
 
     def user(self):
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
         out = self.v3_request("get", "/user")
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("End function returning: %s" % out)
         return out
 
     def tasks(self):
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
         out = self.v3_request("get", "/tasks/user")
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("End function returning: %s" % out)
         return out
 
     def task(self, task_id):
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
         out = self.v3_request("get", "/tasks/%s" % str(task_id))
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("End function returning: %s" % out)
         return out
 
     def create_task(self, task_type, text, date=None, note=None, attrib="rand", priority=1, up_only=False):
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
         attributes = ['str', 'int', 'con', 'per']
         if attrib == "rand" or attrib not in attributes:
@@ -116,12 +116,12 @@ class HabiticaAPI(object):
             data['up'] = True
             data['down'] = False
         out = self.v3_request("post", "/tasks/user", data)
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("End function returning: %s" % out)
         return out
 
     def alter_task(self, task_id, up, down, text, date, note, attrib, priority):
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
         data = {}
         if up:
@@ -139,12 +139,12 @@ class HabiticaAPI(object):
         if priority:
             data['priority'] = priority
         out = self.v3_request("put", "/tasks/%s" % task_id, data)
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("End function returning: %s" % out)
         return out
 
     def create_reward(self, text, value, note=""):
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
         data = {
             'type': 'reward',
@@ -153,127 +153,127 @@ class HabiticaAPI(object):
             'notes': note
         }
         out = self.v3_request("post", "/tasks/user", data)
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("End function returning: %s" % out)
         return out
 
     def update_task(self, task_id, data):
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
         out = self.v3_request("put", "/tasks/%s" % task_id, data)
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("End function returning: %s" % out)
         return out
 
     def delete_task(self, task_id):
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
         out = self.v3_request("delete", "/tasks/%s" % task_id)
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("End function returning: %s" % out)
         return out
 
     def perform_task(self, task_id, direction):
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
         url = "/tasks/%s/score/%s" % (task_id, direction)
         data = {'dummy': 'dummy'}
         out = self.v3_request("post", url, data)
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("End function returning: %s" % out)
         return out
 
     def health_potion(self):
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
         data = {'dummy': 'dummy'}
         out = self.v3_request("post", "/user/buy-health-potion", data)
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("End function returning: %s" % out)
         return out
 
     def defensive_stance(self, target='self'):
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
         data = {'dummy': 'dummy'}
         out = self.v3_request("post", "/user/class/cast/defensiveStance", data)
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("End function returning: %s" % out)
         return out
 
     def feed_pet(self, pet, food):
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
         data = {'dummy': 'dummy'}
         out = self.v3_request(
             "post", "/user/equip/feed/%s/%s" % (pet, food), data)
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("End function returning: %s" % out)
         return out
 
     def get_content_items(self):
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
         data = {'dummy': 'dummy'}
         out = self.v3_request("post", "/content", data)
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("End function returning: %s" % out)
         return out
 
     def test_internet(self):
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
         out = self.get_api_status(10)
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("End function returning: %s" % out)
         return out
 
     def export_avatar_as_png(self):
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
         url = "http://habitica.com/export/avatar-%s.png" % self.user_id
         req = urllib.request.Request(url)
         req.add_header('x-api-user', self.user_id)
         req.add_header('x-api-key', self.api_key)
         out = urllib.request.urlopen(req).read()
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("End function returning avatar")
         return out
 
     def get_api_status(self, timeout=10):
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
         try:
             response = self.v3_request("get", "/status", None, timeout)
         except:
-            if ah.settings.keep_log:
+            if ah.user_settings["keep_log"]:
                 ah.log.error("End function returning: %s" % False)
             return False
         if 'status' in response and response['status'] == 'up':
-            if ah.settings.keep_log:
+            if ah.user_settings["keep_log"]:
                 ah.log.debug("End function returning: %s" % True)
             return True
         else:
-            if ah.settings.keep_log:
+            if ah.user_settings["keep_log"]:
                 ah.log.error("End function returning: %s" % False)
             return False
 
     # Find a habit's ID
     def find_habit_id(self, name):
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
         tasks = self.tasks()
         if tasks:
             for t in tasks:
                 if t["text"] == name:
                     out = str(t["_id"])
-                    if ah.settings.keep_log:
+                    if ah.user_settings["keep_log"]:
                         ah.log.debug("End function returning: %s" % out)
                     return out
-            if ah.settings.keep_log:
+            if ah.user_settings["keep_log"]:
                 ah.log.warning("End function returning: %s" % False)
             return False
         else:
-            if ah.settings.keep_log:
+            if ah.user_settings["keep_log"]:
                 ah.log.error("End function returning: %s" % False)
             return False

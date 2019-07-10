@@ -3,7 +3,7 @@
 # Author: Edward Shapard <ed.shapard@gmail.com>
 # With Database Code by: Tim Wilson
 # Port to Anki 2.1 by 71e6fd52 <71e6fd52@gmail.com>
-# Version 2.1.2
+# Version 2.1.3
 # License: GNU GPL v3 <www.gnu.org/licenses/gpl.html>
 
 import urllib.request
@@ -26,41 +26,10 @@ from anki.utils import intTime
 from . import db_helper, habitica_class
 from .ah_common import AnkiHabiticaCommon as ah, setupLog
 
-__version__ = "2.1.2"
+__version__ = "2.1.3"
 
+ah.user_settings = mw.addonManager.getConfig(__name__)
 
-class ah_settings:  # tiny class for holding settings
-    # Reward Schedule and Settings - YOU MAY EDIT THESE
-    # Note: Anki Habitica keeps track of its own points.
-    #      Once those points reach the 'sched' limit,
-    #      Anki Habitica scores the 'Anki Points' habit.
-
-    ############### YOU MAY EDIT THESE SETTINGS ###############
-    sched = 12  # score habitica when this number of points is reached
-    step = 1  # this is how many points each tick of the progress bar represents
-    tries_eq = 2  # this many wrong answers gives us one point
-    barcolor = '#603960'  # progress bar highlight color
-    barbgcolor = '#BFBFBF'  # progress bar background color
-    timeboxpoints = 1  # points earned for each 15 min 'timebox'
-    matured_eq = 2  # this many matured cards gives us one point
-    learned_eq = 2  # this many newly learned cards gives us one point
-    deckpoints = 0  # points earned for clearing a deck; Default = 0; WARNING: many decks = very slow!
-    show_mini_stats = True  # Show Habitica HP, XP, and MP %s next to prog bar
-    show_popup = True  # show a popup window when you score points.
-    # check Anki database on profile load to see if there are unsynced reviews and sync if there are
-    check_db_on_profile_load = True
-    keep_log = False  # log activity to file
-    # downloading avatar images is currently broken on Habitica's end with no fix in sight
-    download_avatar = False
-    # debug mode that raise all exception
-    debug = False
-    # name of habit
-    habit = "Anki Points"
-    ############# END USER CONFIGURABLE SETTINGS #############
-
-
-### NOTHING FOR USERS TO EDIT below this point ####
-ah.settings = ah_settings  # monkey patch settings to commonly shared class
 # No threads yet in this file, so it doesn't matter habitica_class.py has its own setting to allow threads.
 ah.settings.allow_threads = True
 
@@ -71,14 +40,14 @@ ah.settings.allow_threads = True
 # The log file will be made regardless of logging being enabled, but its size will be
 # null unless logging is enabled.
 setupLog(ah)
-if ah.settings.keep_log:
+if ah.user_settings["keep_log"]:
     ah.log.info('Logfile initialized')
 
 
 # Set some initial settings whenever we load a profile
 #  This includes reloading a profile
 def reset_ah_settings():
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("Begin function")
     # temporary, will be replaced with real Habitica name
     ah.settings.name = 'Anki User'
@@ -87,12 +56,12 @@ def reset_ah_settings():
     ah.settings.user = None  # Holder for current profile user-id
     ah.settings.progbar = ""
     ah.settings.hrpg_progbar = ""
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("End function")
 
 
 # Set these settings on initial run
-ah.settings.threshold = int(0.8 * ah.settings.sched)
+ah.settings.threshold = int(0.8 * ah.user_settings["sched"])
 ah.settings.internet = False  # Can connect to habitica
 ah.settings.conf_read = False  # Read conf file only once
 ah.settings.profile = 'User 1'  # Will be changed to current password
@@ -101,11 +70,11 @@ ah.settings.import_rejected = False  # Prompt to import old config only once
 reset_ah_settings()
 
 # Submenu
-if ah.settings.keep_log:
+if ah.user_settings["keep_log"]:
     ah.log.debug('Adding AnkiHabitica menu')
 AnkiHabiticaMenu = QMenu("AnkiHabitica", mw)
 mw.form.menuTools.addMenu(AnkiHabiticaMenu)
-if ah.settings.keep_log:
+if ah.user_settings["keep_log"]:
     ah.log.debug('AnkiHabitica menu added')
 
 ####################
@@ -118,23 +87,23 @@ ah.conffile = os.path.join(os.path.dirname(
 
 # Function to read the configuration file and give warning message if a problem exists
 def read_conf_file(conffile):
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("Begin function")
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.info("Reading in conf file: %s" % conffile)
     # Return immediately if we already checked credentials
     if ah.settings.conf_read:
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.warning("conf file already read")
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("End function")
         return
 
     if os.path.exists(conffile):    # Load config file
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.info("reading conffile: %s" % conffile)
         ah.config = json.load(open(conffile, 'r'))
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.info(ah.config)
         ah.settings.conf_read = True
 
@@ -144,31 +113,31 @@ def read_conf_file(conffile):
 
     try:
         ah.settings.token = ah.config[ah.settings.profile]['token']
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.info("token: %s" % ah.settings.token)
     except:
         utils.showInfo(
             "Could not retrieve api_token from configuration file.\nTry running Tools >> Setup Habitica")
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.error(
                 "Could not retrieve api_token from configuration file. Try running Tools >> Setup Habitica")
         ah.settings.token = False
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.error("End function")
         return
 
     try:
         ah.settings.user = ah.config[ah.settings.profile]['user']
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.info("User: %s" % ah.settings.user)
     except:
         utils.showInfo(
             "Could not retrieve user_id from configuration file.\nTry running Tools >> Setup Habitica")
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.error(
                 "Could not retrieve user_id from configuration file. Try running Tools >> Setup Habitica")
         ah.settings.user = False
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.error("End function")
         return
     # add defualt scores if missing
@@ -178,37 +147,37 @@ def read_conf_file(conffile):
     # add habit_id if it does not exist
     try:
         if ah.config[ah.settings.profile]['habit_id'].__class__ == dict:
-            ah.config[ah.settings.profile]['habit_id'] = ah.config[ah.settings.profile]['habit_id'][ah.settings.habit]
+            ah.config[ah.settings.profile]['habit_id'] = ah.config[ah.settings.profile]['habit_id'][ah.user_settings["habit"]]
     except:
         ah.config[ah.settings.profile]['habit_id'] = None
     ah.settings.configured = True
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("Settings contents: %s" % ah.settings)
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("End function")
 
 
 # Save stats to config file
 def save_stats(x=None, y=None):
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("Begin function")
     os.makedirs(os.path.dirname(ah.conffile), exist_ok=True)
     json.dump(ah.config, open(ah.conffile, 'w'))
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("End function")
 
 
 # Configure AnkiHabitica
 # We must run this after Anki has initialized and loaded a profile
 def configure_ankihabitica():
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("Begin function")
     if os.path.exists(ah.conffile):    # Load config file
         read_conf_file(ah.conffile)
     else:
         ah.settings.configured = False
 
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("End function")
 
 ##################
@@ -218,7 +187,7 @@ def configure_ankihabitica():
 
 # Setup menu to configure HRPG userid and api key
 def setup():
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("Begin function")
     api_token = None
     user_id = None
@@ -237,37 +206,37 @@ def setup():
 
     # create dictionary for profile in config if not there
     if profile not in ah.config:
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.warning("%s not in config." % profile)
         ah.config[profile] = {}
 
     if not need_info:
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug(
                 "Habitica user credentials already entered for profile: %s. Enter new Habitica User ID and API token?" % profile)
         if utils.askUser("Habitica user credentials already entered for profile: %s.\nEnter new Habitica User ID and API token?" % profile):
             need_info = True
     if need_info:
         for i in [['user', 'User ID'], ['token', 'API token']]:
-            if ah.settings.keep_log:
+            if ah.user_settings["keep_log"]:
                 ah.log.info("profile: %s" % profile)
-            if ah.settings.keep_log:
+            if ah.user_settings["keep_log"]:
                 ah.log.info("config: %s" % str(ah.config[profile]))
-            if ah.settings.keep_log:
+            if ah.user_settings["keep_log"]:
                 ah.log.debug(
                     "Enter your %s: (Go to Settings --> API to find your %s)" % (i[1], i[1]))
             temp_keys[i[0]], ok = utils.getText(
                 "Enter your %s:\n(Go to Settings --> API to find your %s)" % (i[1], i[1]))
-            if ah.settings.keep_log:
+            if ah.user_settings["keep_log"]:
                 ah.log.debug("User response: %s" % temp_keys[i[0]])
         if not ok:
-            if ah.settings.keep_log:
+            if ah.user_settings["keep_log"]:
                 ah.log.warning(
                     'Habitica setup cancelled. Run setup again to use AnkiHabitica')
             utils.showWarning(
                 'Habitica setup cancelled. Run setup again to use AnkiHabitica')
             ah.settings.configured = False
-            if ah.settings.keep_log:
+            if ah.user_settings["keep_log"]:
                 ah.log.warning("End function")
             return
 
@@ -286,21 +255,21 @@ def setup():
                 ah.settings.initialized = False
                 utils.showInfo(
                     "Congratulations!\n\nAnkiHabitica has been setup for profile: %s." % profile)
-                if ah.settings.keep_log:
+                if ah.user_settings["keep_log"]:
                     ah.log.info(
                         "Congratulations! AnkiHabitica has been setup for profile: %s." % profile)
             except:
                 utils.showInfo("An error occured. AnkiHabitica was NOT setup.")
-                if ah.settings.keep_log:
+                if ah.user_settings["keep_log"]:
                     ah.log.error(
                         "An error occured. AnkiHabitica was NOT setup.")
 
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("End function")
 
 
 # Add Setup to menubar
-if ah.settings.keep_log:
+if ah.user_settings["keep_log"]:
     ah.log.debug('Adding setup to menubar')
 action = QAction("Setup Anki Habitica", mw)
 action.triggered.connect(setup)
@@ -313,13 +282,13 @@ AnkiHabiticaMenu.addAction(action)
 
 # Compare score to database
 def compare_score_to_db():
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("Begin function")
     # Return immediately if not ready
     if not ready_or_not():
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.error("compare score: not ready")
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.warning("End function returning: %s" % False)
         return False
 
@@ -327,20 +296,20 @@ def compare_score_to_db():
         if ah.habitica.hnote != None and ah.habitica.hnote['scoresincedate']:
             score_count = ah.habitica.hnote['scorecount']
             start_date = ah.habitica.hnote['scoresincedate']
-            if ah.settings.keep_log:
+            if ah.user_settings["keep_log"]:
                 ah.log.debug("From Habitica note. Score count: %s, Start date: %s (%s)" % (
                     score_count, start_date, db_helper.prettyTime(start_date)))
         else:  # We started offline and could not cotact Habitica
             score_count = habitica_class.Habitica.offline_scorecount  # Starts at 0
             start_date = habitica_class.Habitica.offline_sincedate  # start time of program
-            if ah.settings.keep_log:
+            if ah.user_settings["keep_log"]:
                 ah.log.debug("Offline. Score count: %s, Start date: %s (%s)" % (
                     score_count, start_date, db_helper.prettyTime(start_date)))
-        scored_points = int(score_count * ah.settings.sched)
-        if ah.settings.keep_log:
+        scored_points = int(score_count * ah.user_settings["sched"])
+        if ah.user_settings["keep_log"]:
             ah.log.debug("Scored points: %s" % scored_points)
         dbscore = calculate_db_score(start_date)
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("Database score: %s" % dbscore)
         newscore = dbscore - scored_points
         if newscore < 0:
@@ -348,51 +317,51 @@ def compare_score_to_db():
         # Capture old score
         ah.config[ah.settings.profile]['oldscore'] = ah.config[ah.settings.profile]['score']
         ah.config[ah.settings.profile]['score'] = newscore
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("Old score: %s" % ah.config[ah.settings.profile]['oldscore'])
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("New score: %s" % newscore)
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.info("compare score: success")
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("End function returning: %s" % True)
         return True
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.error("compare score: failed")
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.error("End function returning: %s" % False)
     return False
 
 
 # Calculate score from database
 def calculate_db_score(start_date):
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("Begin function")
     dbcorrect = int(db_helper.correct_answer_count(start_date))
-    if ah.settings.tries_eq:
-        dbwrong = int(db_helper.wrong_answer_count(start_date) / ah.settings.tries_eq)
+    if ah.user_settings["tries_eq"]:
+        dbwrong = int(db_helper.wrong_answer_count(start_date) / ah.user_settings["tries_eq"])
     else:
         dbwrong = 0
-    if ah.settings.timeboxpoints:
-        dbtimebox = int(db_helper.timebox_count(start_date) * ah.settings.timeboxpoints)
+    if ah.user_settings["timeboxpoints"]:
+        dbtimebox = int(db_helper.timebox_count(start_date) * ah.user_settings["timeboxpoints"])
     else:
         dbtimebox = 0
-    if ah.settings.deckpoints:
-        dbdecks = int(db_helper.decks_count(start_date) * ah.settings.deckpoints)
+    if ah.user_settings["deckpoints"]:
+        dbdecks = int(db_helper.decks_count(start_date) * ah.user_settings["deckpoints"])
     else:
         dbdecks = 0
-    if ah.settings.learned_eq:
-        dblearned = int(db_helper.learned_count(start_date) / ah.settings.learned_eq)
+    if ah.user_settings["learned_eq"]:
+        dblearned = int(db_helper.learned_count(start_date) / ah.user_settings["learned_eq"])
     else:
         dblearned = 0
-    if ah.settings.matured_eq:
-        dbmatured = int(db_helper.matured_count(start_date) / ah.settings.matured_eq)
+    if ah.user_settings["matured_eq"]:
+        dbmatured = int(db_helper.matured_count(start_date) / ah.user_settings["matured_eq"])
     else:
         dbmatured = 0
     dbscore = dbcorrect + dbwrong + dbtimebox + dbdecks + dblearned + dbmatured
     if dbscore < 0:
         dbscore = 0  # sanity check
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("End function returning: %s" % dbscore)
     return dbscore
 
@@ -403,47 +372,47 @@ def calculate_db_score(start_date):
 
 # Make progress bar
 def make_habit_progbar():
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("Begin function")
     cur_score = ah.config[ah.settings.profile]['score']
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("Current score for progress bar: %s out of %s" %
-                     (cur_score, ah.settings.sched))
+                     (cur_score, ah.user_settings["sched"]))
     if not ah.settings.configured:
         configure_ankihabitica()
     # length of progress bar excluding increased rate after threshold
-    real_length = int(ah.settings.sched / ah.settings.step)
+    real_length = int(ah.user_settings["sched"] / ah.user_settings["step"])
     # length of progress bar including apparent rate increase after threshold
     fake_length = int(1.2 * real_length)
     if ah.settings.configured:
         # length of shaded bar excluding threshold trickery
         # total real bar length
-        real_point_length = int(cur_score / ah.settings.step) % real_length
+        real_point_length = int(cur_score / ah.user_settings["step"]) % real_length
         # Find extra points to add to shaded bar to make the
         #   bar seem to double after threshold
-        if real_point_length >= int(ah.settings.threshold / ah.settings.step):
-            extra = real_point_length - int(ah.settings.threshold / ah.settings.step)
+        if real_point_length >= int(ah.settings.threshold / ah.user_settings["step"]):
+            extra = real_point_length - int(ah.settings.threshold / ah.user_settings["step"])
         else:
             extra = 0
         # length of shaded bar including threshold trickery
         fake_point_length = int(real_point_length + extra)
         # shaded bar should not be larger than whole prog bar
         bar = min(fake_length, fake_point_length)  # length of shaded bar
-        hrpg_progbar = '<font color="%s">' % ah.settings.barcolor
+        hrpg_progbar = '<font color="%s">' % ah.user_settings["barcolor"]
         # full bar for each tick
         for i in range(bar):
             hrpg_progbar += "&#9608;"
         hrpg_progbar += '</font>'
         points_left = int(fake_length) - int(bar)
-        hrpg_progbar += '<font color="%s">' % ah.settings.barbgcolor
+        hrpg_progbar += '<font color="%s">' % ah.user_settings["barbgcolor"]
         for i in range(points_left):
             hrpg_progbar += "&#9608"
         hrpg_progbar += '</font>'
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("End function returning: %s" % hrpg_progbar)
         return hrpg_progbar
     else:
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("End function returning: %s" % "")
         return ""
 
@@ -454,39 +423,39 @@ def make_habit_progbar():
 
 # Initialize habitica class
 def initialize_habitica_class():
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("Begin function")
 
     ah.habitica = habitica_class.Habitica()
     ah.settings.initialized = True
     # Keep track of the reward schedule, so if it ever changes, we reset
     # the scorecounter and scoresincedate to prevent problems
-    habit = ah.settings.habit
+    habit = ah.user_settings["habit"]
     # set up oldsched dict in config
     try:
         if ah.config[ah.settings.profile]['oldsched'].__class__ == dict:
-            ah.config[ah.settings.profile]['oldsched'] = ah.config[ah.settings.profile]['oldsched'][ah.settings.habit]
+            ah.config[ah.settings.profile]['oldsched'] = ah.config[ah.settings.profile]['oldsched'][ah.user_settings["habit"]]
     except:
-        ah.config[ah.settings.profile]['oldsched'] = ah.settings.sched
+        ah.config[ah.settings.profile]['oldsched'] = ah.user_settings["sched"]
     # Find habits with a changed reward scedule
-    if ah.config[ah.settings.profile]['oldsched'] != ah.settings.sched:
+    if ah.config[ah.settings.profile]['oldsched'] != ah.user_settings["sched"]:
         # reset scorecounter and scoresincedate
         if ah.habitica.reset_scorecounter():
             # set oldsched to current sched
-            ah.config[ah.settings.profile]['oldsched'] = ah.settings.sched
-    if ah.settings.keep_log:
+            ah.config[ah.settings.profile]['oldsched'] = ah.user_settings["sched"]
+    if ah.user_settings["keep_log"]:
         ah.log.debug("End function")
 
 
 # Run various checks to see if we are ready
 def ready_or_not():
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("Begin function")
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.info("Checking if %s is ready" % ah.settings.profile)
     # Configure if not already
     if not ah.settings.configured:
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.info("Ready or Not: not configured")
         configure_ankihabitica()
 
@@ -500,28 +469,28 @@ def ready_or_not():
 
     # Return immediately if we still don't have both the userid and token
     if not ah.settings.user and not ah.settings.token:
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.warning("Not Ready: no user or token")
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.warning("End function returning: %s" % False)
         return False
 
     # initialize habitica class if AnkiHabitica is configured
     # and class is not yet initialized
     if ah.settings.configured and not ah.settings.initialized:
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.info("Ready or not: Initializing habitica")
         initialize_habitica_class()
     # Check to make sure habitica class is initialized
     if not ah.settings.initialized:
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.warning("Ready or not: Not initialized")
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.warning("End function returning: %s" % False)
         return False
 
     if ah.settings.configured and ah.settings.initialized:
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.info("Ready: %s %s" % (ah.settings.user, ah.settings.token))
         # Try to grab any habit ids that we've found.
         try:
@@ -532,23 +501,23 @@ def ready_or_not():
         if ah.habitica.hnote == None:
             habitica_class.Habitica.offline_recover_attempt += 1
             if habitica_class.Habitica.offline_recover_attempt % 3 == 0:
-                if ah.settings.keep_log:
+                if ah.user_settings["keep_log"]:
                     ah.log.info("Trying to grab habits")
                 ah.habitica.init_update()
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("End function returning: %s" % True)
         return True
     else:
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.warning("Not Ready Final")
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.warning("End function returning: %s" % False)
         return False
 
 
 # Process Habitica Points in real time
 def hrpg_realtime(dummy=None):
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("Begin function")
     crit_multiplier = 0
     streak_multiplier = 0
@@ -557,7 +526,7 @@ def hrpg_realtime(dummy=None):
 
     # Check if we are ready; exit if not
     if not ready_or_not():
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.warning("End function returning: %s" % False)
         return False
 
@@ -572,7 +541,7 @@ def hrpg_realtime(dummy=None):
     #  (due to matured cards, learned cards, etc.)
     #  We can't rely on the score always being a multiple of sched
     #  as in the commented condition below...
-    if int(ah.config[ah.settings.profile]['score'] / ah.settings.sched) > int(ah.config[ah.settings.profile]['oldscore'] / ah.settings.sched):
+    if int(ah.config[ah.settings.profile]['score'] / ah.user_settings["sched"]) > int(ah.config[ah.settings.profile]['oldscore'] / ah.user_settings["sched"]):
         # Check internet if down
         if not ah.settings.internet:
             ah.settings.internet = ah.habitica.test_internet()
@@ -585,7 +554,7 @@ def hrpg_realtime(dummy=None):
             ah.habitica.earn_points()
             if ah.config[ah.settings.profile]['score'] < 0:
                 ah.config[ah.settings.profile]['score'] = 0
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("End function")
 
 
@@ -596,27 +565,27 @@ def hrpg_realtime(dummy=None):
 #    Score habitica task for reviews that have not been scored yet
 #    for example, reviews that were done on a smartphone.
 def score_backlog(silent=False):
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("Begin function")
     # Warn User that this can take some time
     warning = "Warning: Scoring backlog may take some time.\n\nMake sure Anki is synced across your devices before you do this. If you do this and you have unsynced reviews on another device, those reviews will not be counted towards Habitica points!\n\nWould you like to continue?"
     if not silent:
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug(warning.replace('\n', ' '))
         cont = utils.askUser(warning)
     else:
         cont = True
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug(
             "User chose to score backlog (or silent mode is on): %s" % cont)
     if not cont:
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.warning("End function returning: %s" % False)
         return False
 
     # Exit if not ready
     if not ready_or_not():
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.warning("End function returning: %s" % False)
         return False
 
@@ -628,9 +597,9 @@ def score_backlog(silent=False):
         if not silent:
             ah.habitica.hrpg_showInfo(
                 "Hmmm...\n\nI can't connect to Habitica. Perhaps your internet is down.\n\nI'll remember your points and try again later.")
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.warning("No internet connection")
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.warning("End function returning: %s" % False)
         return False
 
@@ -638,27 +607,27 @@ def score_backlog(silent=False):
 
     # Compare database to scored points
     if compare_score_to_db():
-        if ah.config[ah.settings.profile]['score'] < ah.settings.sched:
+        if ah.config[ah.settings.profile]['score'] < ah.user_settings["sched"]:
             if not silent:
                 utils.showInfo("No backlog to score")
-            if ah.settings.keep_log:
+            if ah.user_settings["keep_log"]:
                 ah.log.info("No backlog to score")
-            if ah.settings.keep_log:
+            if ah.user_settings["keep_log"]:
                 ah.log.debug("End function returning: %s" % True)
             return True
         # OK, now we can score some points...
         p = 0  # point counter
         i = 0  # limit tries to 25 to prevent endless loop
-        numScores = ah.config[ah.settings.profile]['score'] // ah.settings.sched
-        if ah.settings.keep_log:
+        numScores = ah.config[ah.settings.profile]['score'] // ah.user_settings["sched"]
+        if ah.user_settings["keep_log"]:
             ah.log.debug("%s points to score" % numScores)
         progressLabel = "Scoring %s point%s to Habitica" % (
             numScores, "" if numScores == 0 else "s")
         mw.progress.start(max=numScores, label=progressLabel)
-        while i <= 2*numScores and ah.config[ah.settings.profile]['score'] >= ah.settings.sched and ah.settings.internet:
+        while i <= 2*numScores and ah.config[ah.settings.profile]['score'] >= ah.user_settings["sched"] and ah.settings.internet:
             try:
                 ah.habitica.silent_earn_points()
-                ah.config[ah.settings.profile]['score'] -= ah.settings.sched
+                ah.config[ah.settings.profile]['score'] -= ah.user_settings["sched"]
                 i += 1
                 p += 1
                 mw.progress.update()
@@ -668,13 +637,13 @@ def score_backlog(silent=False):
         if not silent:
             utils.showInfo("%s point%s scored on Habitica" %
                            (p, "" if p == 1 else "s"))
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.info("%s point%s scored on Habitica" %
                         (p, "" if p == 1 else "s"))
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.info("New scorecount: %s" %
                         ah.habitica.hnote['scorecount'])
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.info("New config score: %s" %
                         ah.config[ah.settings.profile]['score'])
         ah.habitica.hnote['scorecount'] = habitica_class.Habitica.offline_scorecount = 0
@@ -683,12 +652,12 @@ def score_backlog(silent=False):
         ah.habitica.post_scorecounter()
         runHook("HabiticaAfterScore")
         save_stats(None, None)
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("End function")
 
 
 # Add Score Backlog to menubar
-if ah.settings.keep_log:
+if ah.user_settings["keep_log"]:
     ah.log.debug('Adding Score Backlog to menubar')
 backlog_action = QAction("Score Habitica Backlog", mw)
 backlog_action.triggered.connect(score_backlog)
@@ -698,19 +667,19 @@ AnkiHabiticaMenu.addAction(backlog_action)
 # Refresh Habitica Avatar
 #    Sometimes it comes down malformed.
 def refresh_habitica_avatar():
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("Begin function")
     if ah.settings.initialized and ah.settings.internet:
         if habitica_class.Habitica.allow_threads:
             _thread.start_new_thread(ah.habitica.save_avatar, ())
         else:
             ah.habitica.save_avatar()
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("End function")
 
 
 # Add Refresh Habitica Avatar to menubar
-if ah.settings.keep_log:
+if ah.user_settings["keep_log"]:
     ah.log.debug('Adding Refresh Habitica Avatar to menubar')
 avatar_action = QAction("Refresh Habitica Avatar", mw)
 avatar_action.triggered.connect(refresh_habitica_avatar)
@@ -722,18 +691,18 @@ AnkiHabiticaMenu.addAction(avatar_action)
 
 
 def grab_profile():
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("Begin function")
     reset_ah_settings()
     ah.settings.profile = aqt.mw.pm.name
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.info("your profile is %s" % (ah.settings.profile))
     if ah.settings.profile not in ah.config:
         ah.config[ah.settings.profile] = {}
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.info("adding %s to config dict" % ah.settings.profile)
     ready_or_not()
-    if ah.settings.check_db_on_profile_load and ah.settings.configured and ah.habitica.grab_scorecounter() and compare_score_to_db():
+    if ah.user_settings["check_db_on_profile_load"] and ah.settings.configured and ah.habitica.grab_scorecounter() and compare_score_to_db():
         #         TODO: the idea was to check the db (fast) then then ask the user if they wanted to sync iwth Habitica (slow), but
         #                there's an issue whree ['score'] shows a different value after the above call to compare_score_to_db() then
         #                what is shwon when score_backlog() is called. This discrepency is easy to see in the log:
@@ -742,17 +711,17 @@ def grab_profile():
         #                3. immediately sync backlog and see in log that more than 0 are there.
         #                So, I'm just running score_backlog() either way.
 
-        if ah.settings.keep_log:
+        if ah.user_settings["keep_log"]:
             ah.log.debug("%s point(s) earned of %s required" % (
-                ah.config[ah.settings.profile]['score'], ah.settings.sched))
-        if ah.config[ah.settings.profile]['score'] >= ah.settings.sched or ah.config[ah.settings.profile]['oldscore'] >= ah.settings.sched:
-            if ah.settings.keep_log:
+                ah.config[ah.settings.profile]['score'], ah.user_settings["sched"]))
+        if ah.config[ah.settings.profile]['score'] >= ah.user_settings["sched"] or ah.config[ah.settings.profile]['oldscore'] >= ah.user_settings["sched"]:
+            if ah.user_settings["keep_log"]:
                 ah.log.debug("Asking user to sync backlog.")
             if utils.askUser('New reviews found. Sync with Habitica now?\n\nWARNING: Make sure Anki is synced across your devices before you do this. If you do this and you have unsynced reviews on anohter device, those reviews will not be counted towards Habitica points!'):
-                if ah.settings.keep_log:
+                if ah.user_settings["keep_log"]:
                     ah.log.debug('Syncing backlog')
                 score_backlog(True)
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("End function")
 
 #################
@@ -769,16 +738,16 @@ orig_remaining = Reviewer._remaining
 
 
 def my_remaining(x):
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("Begin function")
     ret = orig_remaining(x)
     if not ah.settings.hrpg_progbar == "":
         ret += " : %s" % (ah.settings.hrpg_progbar)
-    if ah.settings.initialized and ah.settings.show_mini_stats:
+    if ah.settings.initialized and ah.user_settings["show_mini_stats"]:
         mini_stats = ah.habitica.compact_habitica_stats()
         if mini_stats:
             ret += " : %s" % (mini_stats)
-    if ah.settings.keep_log:
+    if ah.user_settings["keep_log"]:
         ah.log.debug("End function returning: %s" % ret)
     return ret
 

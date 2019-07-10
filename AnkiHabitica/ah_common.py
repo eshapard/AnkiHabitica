@@ -7,6 +7,7 @@ import os
 
 class AnkiHabiticaCommon:
     config = {}  # dictionary for configuration
+    user_settings = {}
     log = logging.Logger
 
     class settings:
@@ -37,7 +38,7 @@ class AnkiHabiticaCommon:
 
 def setupLog(ah):
     ah.log = logging.getLogger('AnkiHabitica')
-    if ah.settings.debug:
+    if ah.user_settings["debug"]:
         ah.log.setLevel(logging.DEBUG)
     else:
         ah.log.setLevel(logging.ERROR)
