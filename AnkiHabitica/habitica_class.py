@@ -512,11 +512,8 @@ class Habitica(object):
         crit_multiplier = None
         streak_bonus = None
         drop_dialog = None
-        # Loop through scoring attempts up to 3 times
-        # -- to account for missed scoring opportunities (smartphones, etc.)
-        i = 0  # loop counter
         success = False
-        while i < 3 and ah.config[ah.settings.profile]['score'] >= ah.user_settings["sched"] and ah.settings.internet:
+        if ah.config[ah.settings.profile]['score'] >= ah.user_settings["sched"] and ah.settings.internet:
             try:
                 msg = self.score_anki_points()
                 if msg['lvl']:  # Make sure we really got a response
@@ -549,9 +546,8 @@ class Habitica(object):
             except:
                 if ah.user_settings["debug"]:
                     raise
-            i += 1
 
-        if not success:  # exit if we failed all 3 times
+        if not success:
             self.hrpg_showInfo(
                 "Huzzah! You've earned points!\nWell done %s!\n\nSorry,\nI couldn't score your %s habit on Habitica.\nDon't worry, I'll remember your points and try again later." % (self.name, habit))
             ah.settings.internet = False  # internet failed
