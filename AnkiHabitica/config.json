@@ -1,4 +1,5 @@
 {
+  "auto_earn": true,
   "barcolor": "#603960",
   "barbgcolor": "#BFBFBF",
   "check_db_on_profile_load": true,

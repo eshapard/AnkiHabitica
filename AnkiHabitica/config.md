@@ -1,3 +1,4 @@
+* `auto_earn`, auto earn points after each card
 * `barcolor`, progress bar highlight color
 * `barbgcolor`, progress bar background color
 * `check_db_on_profile_load`, check Anki database on profile load to see if there are unsynced reviews and sync if there are

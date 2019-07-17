@@ -530,6 +530,11 @@ def hrpg_realtime(dummy=None):
             ah.log.warning("End function returning: %s" % False)
         return False
 
+    if not ah.user_settings["auto_earn"]:
+        if ah.user_settings["keep_log"]:
+            ah.log.warning("End function for user disable: returning: %s" % False)
+        return False
+
     # Compare score to database an make score progbar
     if compare_score_to_db():
         ah.settings.hrpg_progbar = make_habit_progbar()
