@@ -29,7 +29,7 @@ class HabiticaAPI(object):
         if ah.user_settings["keep_log"]:
             ah.log.debug("End function")
 
-    def v3_request(self, method, path, data={'dummy': 'dummy'}, t=0):
+    def v3_request(self, method, path, data={'dummy': 'dummy'}, timeout=5):
         context = ssl._create_unverified_context()
         # Dummy data needed for post, put, and delete commands now.
         if ah.user_settings["keep_log"]:
@@ -57,10 +57,7 @@ class HabiticaAPI(object):
                 req.add_header('Content-Length', '0')  # makes blank data work
             req.get_method = lambda: "POST"  # Needed for no-data posts
 
-        if t:
-            response = json.load(urllib.request.urlopen(req, None, t, context=context))
-        else:
-            response = json.load(urllib.request.urlopen(req, context=context))
+        response = json.load(urllib.request.urlopen(req, timeout=timeout, context=context))
 
         if response['success']:
             out = response['data']
