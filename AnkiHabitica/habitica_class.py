@@ -134,6 +134,7 @@ class Habitica(object):
         mb.setWindowTitle("Anki Habitica")
         b = mb.addButton(QMessageBox.Ok)
         b.setDefault(True)
+        b.setAutoDefault(True)
         out = mb.exec_()
         if ah.user_settings["keep_log"]:
             ah.log.debug("End function returning: %s" % out)
