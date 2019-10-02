@@ -3,7 +3,7 @@
 # Author: Edward Shapard <ed.shapard@gmail.com>
 # With Database Code by: Tim Wilson
 # Port to Anki 2.1 by 71e6fd52 <71e6fd52@gmail.com>
-# Version 2.1.4
+# Version 2.1.5
 # License: GNU GPL v3 <www.gnu.org/licenses/gpl.html>
 
 import urllib.request
@@ -26,7 +26,7 @@ from anki.utils import intTime
 from . import db_helper, habitica_class
 from .ah_common import AnkiHabiticaCommon as ah, setupLog
 
-__version__ = "2.1.4"
+__version__ = "2.1.5"
 
 ah.user_settings = mw.addonManager.getConfig(__name__)
 
