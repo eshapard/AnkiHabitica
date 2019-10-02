@@ -296,7 +296,7 @@ class Habitica(object):
                     ah.log.error("End function returning: %s" % False)
                 if ah.user_settings["debug"]:
                     raise
-                hrpg_showInfo("Your %s habit is not configured correctly yet.\nPlease set it to Up only and Mental attribute." % habit)
+                self.hrpg_showInfo("Your %s habit is not configured correctly yet.\nPlease set it to Up only and Mental attribute." % habit)
                 return False
         if ah.user_settings["keep_log"]:
             ah.log.debug("Habit looks good")
