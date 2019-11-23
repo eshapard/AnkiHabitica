@@ -9,6 +9,7 @@
 * `keep_log`, log activity to file
 * `learned_eq`, this many newly learned cards gives us one point
 * `matured_eq`, this many matured cards gives us one point
+* `proxy`, http proxy
 * `sched`, score habitica when this number of points is reached
 * `show_mini_stats`, Show Habitica HP, XP, and MP %s next to prog bar
 * `show_popup`, show a popup window when you score points.

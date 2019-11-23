@@ -57,7 +57,22 @@ class HabiticaAPI(object):
                 req.add_header('Content-Length', '0')  # makes blank data work
             req.get_method = lambda: "POST"  # Needed for no-data posts
 
-        response = json.load(urllib.request.urlopen(req, timeout=timeout, context=context))
+        handler = urllib.request.HTTPSHandler(context=context)
+        proxy = ah.user_settings["proxy"]
+        if proxy:
+            if "://" not in proxy:
+                proxy = "http://" + proxy
+            if ah.user_settings["keep_log"]:
+                ah.log.debug("use proxy: %s" % proxy)
+            proxy_handler = urllib.request.ProxyHandler({
+                'http': proxy,
+                'https': proxy
+                })
+            opener = urllib.request.build_opener(proxy_handler, handler)
+        else:
+            opener = urllib.request.build_opener(handler)
+
+        response = json.load(opener.open(req, timeout=timeout))
 
         if response['success']:
             out = response['data']

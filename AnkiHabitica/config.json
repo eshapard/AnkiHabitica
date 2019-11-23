@@ -10,6 +10,7 @@
   "keep_log": false,
   "learned_eq": 2,
   "matured_eq": 2,
+  "proxy": "",
   "sched": 12,
   "show_mini_stats": true,
   "show_popup": true,
