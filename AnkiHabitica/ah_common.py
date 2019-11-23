@@ -45,8 +45,12 @@ def setupLog(ah):
 
     logName = os.path.join(os.path.dirname(
         os.path.realpath(__file__)), "AnkiHabitica.log")
-    fh = logging.handlers.RotatingFileHandler(
-        logName, maxBytes=1e6, backupCount=5)
+
+    roll = os.path.isfile(logName)
+    fh = logging.handlers.RotatingFileHandler(logName, backupCount=5)
+    if roll:  # log already exists, roll over!
+            fh.doRollover()
+
     fmt = logging.Formatter(
         '%(asctime)s [%(threadName)14s:%(filename)18s:%(lineno)5s - %(funcName)30s()] %(levelname)8s: %(message)s')
     fh.setFormatter(fmt)
