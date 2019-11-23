@@ -208,9 +208,9 @@ class Habitica(object):
     # Check Anki Habit, make new one if it does not exist, and try to
     #    grab the note string.
     def check_anki_habit(self):
-        habit = ah.user_settings["habit"]
         if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
+        habit = ah.user_settings["habit"]
         if ah.user_settings["keep_log"]:
             ah.log.debug("checking %s" % habit)
         try:
@@ -247,8 +247,17 @@ class Habitica(object):
             if ah.user_settings["keep_log"]:
                 ah.log.warning("End function returning: %s" % False)
             return False
-        del tasks
 
+        if Habitica.allow_threads:
+            _thread.start_new_thread(self.check_anki_habit_task, ())
+        else:
+            self.check_anki_habit_task()
+        if ah.user_settings["keep_log"]:
+            ah.log.debug("End function")
+
+    def check_anki_habit_task(self):
+        if ah.user_settings["keep_log"]:
+            ah.log.debug("Begin function")
         # Check to see that habitica habit is set up properly
         if ah.user_settings["keep_log"]:
             ah.log.debug("Checking habit setup")
