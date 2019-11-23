@@ -218,6 +218,7 @@ class Habitica(object):
             if ah.user_settings["keep_log"]:
                 ah.log.debug(json.dumps(tasks))
             found = False
+            exists = False
             for t in tasks:
                 if str(t['id']) == str(self.habit_id):
                     found = True
