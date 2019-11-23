@@ -35,8 +35,8 @@ ah.settings.allow_threads = True
 
 # Setup logging
 # The log file is saved in the AnkiHabitica subfolder of the Anki add-ons folder.
-# A log file will grow to 1MB, at which point it will be rotated.
-# There can be as many as 5 log files, each 1MB, before old files will be removed.
+# A log file will be rotated when Anki start.
+# There can be as many as 5 log files, before old files will be removed.
 # The log file will be made regardless of logging being enabled, but its size will be
 # null unless logging is enabled.
 ah.setupLog()
