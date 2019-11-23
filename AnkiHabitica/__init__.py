@@ -24,7 +24,7 @@ from aqt.main import AnkiQt
 from anki.utils import intTime
 
 from . import db_helper, habitica_class
-from .ah_common import AnkiHabiticaCommon as ah, setupLog
+from .ah_common import AnkiHabiticaCommon as ah
 
 __version__ = "2.1.5"
 
@@ -39,9 +39,9 @@ ah.settings.allow_threads = True
 # There can be as many as 5 log files, each 1MB, before old files will be removed.
 # The log file will be made regardless of logging being enabled, but its size will be
 # null unless logging is enabled.
-setupLog(ah)
+ah.setupLog()
 if ah.user_settings["keep_log"]:
-    ah.log.info('Logfile initialized')
+    ah.log.info("Logfile initialized")
 
 
 # Set some initial settings whenever we load a profile
