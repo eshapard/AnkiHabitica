@@ -53,12 +53,8 @@ class Habitica(object):
         if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
         self.habit_grabbed = False
-        # create a thread to check the habit as to not slow down
-        # the startup process
-        if Habitica.allow_threads:
-            _thread.start_new_thread(self.check_anki_habit, ())
-        else:
-            self.check_anki_habit()
+
+        self.check_anki_habit()
 
         # Grab user object in the background
         if Habitica.allow_threads:
@@ -215,28 +211,35 @@ class Habitica(object):
         habit = ah.user_settings["habit"]
         if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
-        found = False
         if ah.user_settings["keep_log"]:
             ah.log.debug("checking %s" % habit)
-        if self.habit_id == None:
-            try:
-                self.habit_id = self.api.find_habit_id(habit)
-                habitID = self.habit_id
-            except:
-                if ah.user_settings["keep_log"]:
-                    ah.log.error("End function returning: %s" % False)
-                if ah.user_settings["debug"]:
-                    raise
-                return False
-        else:
-            habitID = self.habit_id
-            # We have an ID, but we may want to check that the habit still exists
-        if ah.user_settings["keep_log"]:
-            ah.log.debug("HabitID: %s" % habitID)
-        if not habitID:  # find_habit_id returned False; habit not found!
+        try:
+            tasks = self.api.tasks()
             if ah.user_settings["keep_log"]:
-                ah.log.warning("Habit ID Missing")
-            self.habit_id = None
+                ah.log.debug(json.dumps(tasks))
+            found = False
+            for t in tasks:
+                if str(t['id']) == str(self.habit_id):
+                    found = True
+                if t["text"] == habit:
+                    exists = True
+                    found_id = str(t["_id"])
+        except:
+            if ah.user_settings["keep_log"]:
+                ah.log.error("End function returning: %s" % False)
+            if ah.user_settings["debug"]:
+                raise
+            return False
+        if found:
+            self.missing = False
+            if ah.user_settings["keep_log"]:
+                ah.log.debug("Task found")
+        elif exists:
+            self.missing = False
+            self.habit_id = found_id
+            if ah.user_settings["keep_log"]:
+                ah.log.warning("Task id incorrect, fixed")
+        else:
             self.missing = True
             if ah.user_settings["keep_log"]:
                 ah.log.warning("Task not found")
@@ -244,38 +247,13 @@ class Habitica(object):
             if ah.user_settings["keep_log"]:
                 ah.log.warning("End function returning: %s" % False)
             return False
-        # Check to see if habit Still exists
-        if ah.user_settings["keep_log"]:
-            ah.log.debug("Checking %s habit" % habit)
-        if not found:
-            try:
-                tasks = self.api.tasks()
-                if ah.user_settings["keep_log"]:
-                    ah.log.debug(json.dumps(tasks))
-                for t in tasks:
-                    if str(t['id']) == str(habitID):
-                        found = True
-                if found:
-                    self.missing = False
-                    del tasks
-                    if ah.user_settings["keep_log"]:
-                        ah.log.debug("Task found")
-                else:
-                    self.missing = True
-                    if ah.user_settings["keep_log"]:
-                        ah.log.warning("Task not found")
-                    self.create_missing_habit()
-                    del tasks
-                    if ah.user_settings["keep_log"]:
-                        ah.log.warning("End function returning: %s" % False)
-                    return False
-            except:
-                pass
+        del tasks
+
         # Check to see that habitica habit is set up properly
         if ah.user_settings["keep_log"]:
             ah.log.debug("Checking habit setup")
         try:
-            response = self.api.task(habitID)
+            response = self.api.task(self.habit_id)
         except:
             if ah.user_settings["keep_log"]:
                 ah.log.error("Could not retrieve task")
@@ -288,7 +266,7 @@ class Habitica(object):
             try:
                 if ah.user_settings["keep_log"]:
                     ah.log.debug("Updating Habit")
-                self.update_anki_habit(habitID)
+                self.update_anki_habit(self.habit_id)
                 if ah.user_settings["keep_log"]:
                     ah.log.debug("End function returning: %s" % True)
                 return True
