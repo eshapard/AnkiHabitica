@@ -245,6 +245,7 @@ def setup():
             # strip spaces that sometimes creep in from copy/paste
             for i in ['user', 'token']:
                 temp_keys[i] = str(temp_keys[i]).replace(" ", "")
+                temp_keys[i] = str(temp_keys[i]).replace("\n", "")
                 ah.config[profile][i] = temp_keys[i]
             # save new config file
             save_stats(None, None)
