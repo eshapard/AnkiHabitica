@@ -131,9 +131,8 @@ def learned_count(start_date):
         from revlog
         where type = 0
         group by cid) as s
-        where id/1000 > :oldTime
-        """,
-                               oldTime=start_date)
+        where id/1000 > ?
+        """, start_date)
     if learned is None:
         learned = 0
     if ah.user_settings["keep_log"]:
@@ -166,16 +165,16 @@ def decks_count(start_date):
             count()
             from cards where
             queue in (2,3) and
-            did = :d and
-            due <= :oldDay
-            """, d=d['id'], oldDay=mw.col.sched.today-nDays)) for nDays in range(numDays)]
+            did = ? and
+            due <= ?
+            """, (d['id'], mw.col.sched.today-nDays))) for nDays in range(numDays)]
         # get list of number of cards reviewed for deck each day
         cardsDone = mw.col.db.all("""
             select
-            (cast((id/1000.0 - :cut) / 86400.0 as int)) as day,
+            (cast((id/1000.0 - ?) / 86400.0 as int)) as day,
             sum(case when cid in %s then 1 else 0 end)
             from revlog where
-            id/1000 > :oldTime
+            id/1000 > ?
             group by day order by day
             """ % ids2str([x[0] for x in mw.col.db.all("""
                 select
@@ -183,8 +182,7 @@ def decks_count(start_date):
                 from cards where
                 did = ?
                 """, d['id'])]),
-            cut=mw.col.sched.dayCutoff,
-            oldTime=start_date)
+            (mw.col.sched.dayCutoff, start_date))
         '''
         The db.all() call above only returns data for days that have >= 1 completed review,
         so there is not in general a one-to-one corresponce between cardsDue and cardsDone
