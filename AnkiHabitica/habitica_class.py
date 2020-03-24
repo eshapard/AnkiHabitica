@@ -9,6 +9,7 @@ import _thread
 from aqt import *
 from aqt.main import AnkiQt
 from anki.hooks import runHook
+from anki.lang import _
 from . import db_helper
 from anki.utils import intTime
 from aqt.utils import tooltip
