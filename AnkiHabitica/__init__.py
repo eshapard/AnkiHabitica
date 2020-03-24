@@ -54,7 +54,6 @@ def reset_ah_settings():
     ah.settings.initialized = False  # If habitica class is initialized
     ah.settings.token = None  # Holder for current profile api-token
     ah.settings.user = None  # Holder for current profile user-id
-    ah.settings.progbar = ""
     ah.settings.hrpg_progbar = ""
     if ah.user_settings["keep_log"]:
         ah.log.debug("End function")
@@ -747,7 +746,7 @@ def my_remaining(x):
     if ah.user_settings["keep_log"]:
         ah.log.debug("Begin function")
     ret = orig_remaining(x)
-    if not ah.settings.hrpg_progbar == "":
+    if ah.user_settings["show_progress_bar"] and not ah.settings.hrpg_progbar == "":
         ret += " : %s" % (ah.settings.hrpg_progbar)
     if ah.settings.initialized and ah.user_settings["show_mini_stats"]:
         mini_stats = ah.habitica.compact_habitica_stats()

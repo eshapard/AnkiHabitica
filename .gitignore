@@ -1,4 +1,5 @@
 *.pyc
 *.ankiaddon
-AnkiHabitica.log
+AnkiHabitica.log*
 AnkiHabitica.conf
+meta.json

@@ -14,6 +14,7 @@
   "sched": 12,
   "show_mini_stats": true,
   "show_popup": true,
+  "show_progress_bar": true,
   "step": 1,
   "timeboxpoints": 1,
   "tries_eq": 2

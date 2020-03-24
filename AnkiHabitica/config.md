@@ -11,8 +11,9 @@
 * `matured_eq`, this many matured cards gives us one point
 * `proxy`, http proxy
 * `sched`, score habitica when this number of points is reached
-* `show_mini_stats`, Show Habitica HP, XP, and MP %s next to prog bar
+* `show_mini_stats`, Show Habitica HP, XP, and MP %s next to progress bar
 * `show_popup`, show a popup window when you score points.
+* `show_progress_bar`, Show progress bar
 * `step`, this is how many points each tick of the progress bar represents
 * `timeboxpoints`, points earned for each 15 min "timebox"
 * `tries_eq`, this many wrong answers gives us one point
