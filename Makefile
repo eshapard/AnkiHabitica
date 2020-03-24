@@ -1,4 +1,4 @@
 addon:
-	$(MAKE) -C AnkiHabitica
+	git archive --format=zip HEAD:AnkiHabitica -o AnkiHabitica.ankiaddon
 
 .PHONY: addon
