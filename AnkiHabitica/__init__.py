@@ -139,7 +139,7 @@ def read_conf_file(conffile):
         if ah.user_settings["keep_log"]:
             ah.log.error("End function")
         return
-    # add defualt scores if missing
+    # add default scores if missing
     for i in ['score', 'oldscore']:
         if i not in ah.config[ah.settings.profile]:
             ah.config[ah.settings.profile][i] = 0
@@ -259,10 +259,11 @@ def setup():
                     ah.log.info(
                         "Congratulations! AnkiHabitica has been setup for profile: %s." % profile)
             except:
-                utils.showInfo("An error occured. AnkiHabitica was NOT setup.")
+                utils.showInfo(
+                    "An error occurred. AnkiHabitica was NOT setup.")
                 if ah.user_settings["keep_log"]:
                     ah.log.error(
-                        "An error occured. AnkiHabitica was NOT setup.")
+                        "An error occurred. AnkiHabitica was NOT setup.")
 
     if ah.user_settings["keep_log"]:
         ah.log.debug("End function")
@@ -308,17 +309,18 @@ def compare_score_to_db():
         scored_points = int(score_count * ah.user_settings["sched"])
         if ah.user_settings["keep_log"]:
             ah.log.debug("Scored points: %s" % scored_points)
-        dbscore = calculate_db_score(start_date)
+        db_score = calculate_db_score(start_date)
         if ah.user_settings["keep_log"]:
-            ah.log.debug("Database score: %s" % dbscore)
-        newscore = dbscore - scored_points
+            ah.log.debug("Database score: %s" % db_score)
+        newscore = db_score - scored_points
         if newscore < 0:
             newscore = 0  # sanity check
         # Capture old score
         ah.config[ah.settings.profile]['oldscore'] = ah.config[ah.settings.profile]['score']
         ah.config[ah.settings.profile]['score'] = newscore
         if ah.user_settings["keep_log"]:
-            ah.log.debug("Old score: %s" % ah.config[ah.settings.profile]['oldscore'])
+            ah.log.debug("Old score: %s" %
+                         ah.config[ah.settings.profile]['oldscore'])
         if ah.user_settings["keep_log"]:
             ah.log.debug("New score: %s" % newscore)
         if ah.user_settings["keep_log"]:
@@ -337,33 +339,44 @@ def compare_score_to_db():
 def calculate_db_score(start_date):
     if ah.user_settings["keep_log"]:
         ah.log.debug("Begin function")
-    dbcorrect = int(db_helper.correct_answer_count(start_date))
+    db_correct = int(db_helper.correct_answer_count(start_date))
+
     if ah.user_settings["tries_eq"]:
-        dbwrong = int(db_helper.wrong_answer_count(start_date) / ah.user_settings["tries_eq"])
+        db_wrong = int(db_helper.wrong_answer_count(start_date) /
+                       ah.user_settings["tries_eq"])
     else:
-        dbwrong = 0
+        db_wrong = 0
+
     if ah.user_settings["timeboxpoints"]:
-        dbtimebox = int(db_helper.timebox_count(start_date) * ah.user_settings["timeboxpoints"])
+        db_timebox = int(db_helper.timebox_count(start_date) *
+                         ah.user_settings["timeboxpoints"])
     else:
-        dbtimebox = 0
+        db_timebox = 0
+
     if ah.user_settings["deckpoints"]:
-        dbdecks = int(db_helper.decks_count(start_date) * ah.user_settings["deckpoints"])
+        db_decks = int(db_helper.decks_count(start_date) *
+                       ah.user_settings["deckpoints"])
     else:
-        dbdecks = 0
+        db_decks = 0
+
     if ah.user_settings["learned_eq"]:
-        dblearned = int(db_helper.learned_count(start_date) / ah.user_settings["learned_eq"])
+        db_learned = int(db_helper.learned_count(start_date) /
+                         ah.user_settings["learned_eq"])
     else:
-        dblearned = 0
+        db_learned = 0
+
     if ah.user_settings["matured_eq"]:
-        dbmatured = int(db_helper.matured_count(start_date) / ah.user_settings["matured_eq"])
+        db_matured = int(db_helper.matured_count(start_date) /
+                         ah.user_settings["matured_eq"])
     else:
-        dbmatured = 0
-    dbscore = dbcorrect + dbwrong + dbtimebox + dbdecks + dblearned + dbmatured
-    if dbscore < 0:
-        dbscore = 0  # sanity check
+        db_matured = 0
+
+    db_score = db_correct + db_wrong + db_timebox + db_decks + db_learned + db_matured
+    if db_score < 0:
+        db_score = 0  # sanity check
     if ah.user_settings["keep_log"]:
-        ah.log.debug("End function returning: %s" % dbscore)
-    return dbscore
+        ah.log.debug("End function returning: %s" % db_score)
+    return db_score
 
 
 ####################
@@ -387,11 +400,13 @@ def make_habit_progbar():
     if ah.settings.configured:
         # length of shaded bar excluding threshold trickery
         # total real bar length
-        real_point_length = int(cur_score / ah.user_settings["step"]) % real_length
+        real_point_length = int(
+            cur_score / ah.user_settings["step"]) % real_length
         # Find extra points to add to shaded bar to make the
         #   bar seem to double after threshold
         if real_point_length >= int(ah.settings.threshold / ah.user_settings["step"]):
-            extra = real_point_length - int(ah.settings.threshold / ah.user_settings["step"])
+            extra = real_point_length - \
+                int(ah.settings.threshold / ah.user_settings["step"])
         else:
             extra = 0
         # length of shaded bar including threshold trickery
@@ -437,7 +452,7 @@ def initialize_habitica_class():
             ah.config[ah.settings.profile]['oldsched'] = ah.config[ah.settings.profile]['oldsched'][ah.user_settings["habit"]]
     except:
         ah.config[ah.settings.profile]['oldsched'] = ah.user_settings["sched"]
-    # Find habits with a changed reward scedule
+    # Find habits with a changed reward schedule
     if ah.config[ah.settings.profile]['oldsched'] != ah.user_settings["sched"]:
         # reset scorecounter and scoresincedate
         if ah.habitica.reset_scorecounter():
@@ -532,7 +547,8 @@ def hrpg_realtime(dummy=None):
 
     if not ah.user_settings["auto_earn"]:
         if ah.user_settings["keep_log"]:
-            ah.log.warning("End function for user disable: returning: %s" % False)
+            ah.log.warning(
+                "End function for user disable: returning: %s" % False)
         return False
 
     # Compare score to database an make score progbar
@@ -553,7 +569,7 @@ def hrpg_realtime(dummy=None):
         # If Internet is still down
         if not ah.settings.internet:
             ah.habitica.hrpg_showInfo(
-                "Hmmm...\n\nI can't connect to Habitica. Perhaps your internet is down.\n\nI'll remember your points and try again later.")
+                "Hmm...\n\nI can't connect to Habitica. Perhaps your internet is down.\n\nI'll remember your points and try again later.")
 
         if ah.settings.internet:
             ah.habitica.earn_points()
@@ -601,7 +617,7 @@ def score_backlog(silent=False):
     if not ah.settings.internet and ah.settings.initialized:
         if not silent:
             ah.habitica.hrpg_showInfo(
-                "Hmmm...\n\nI can't connect to Habitica. Perhaps your internet is down.\n\nI'll remember your points and try again later.")
+                "Hmm...\n\nI can't connect to Habitica. Perhaps your internet is down.\n\nI'll remember your points and try again later.")
         if ah.user_settings["keep_log"]:
             ah.log.warning("No internet connection")
         if ah.user_settings["keep_log"]:
@@ -708,9 +724,9 @@ def grab_profile():
             ah.log.info("adding %s to config dict" % ah.settings.profile)
     ready_or_not()
     if ah.user_settings["check_db_on_profile_load"] and ah.settings.configured and ah.habitica.grab_scorecounter() and compare_score_to_db():
-        #         TODO: the idea was to check the db (fast) then then ask the user if they wanted to sync iwth Habitica (slow), but
-        #                there's an issue whree ['score'] shows a different value after the above call to compare_score_to_db() then
-        #                what is shwon when score_backlog() is called. This discrepency is easy to see in the log:
+        #         TODO: the idea was to check the db (fast) then then ask the user if they wanted to sync with Habitica (slow), but
+        #                there's an issue where ['score'] shows a different value after the above call to compare_score_to_db() then
+        #                what is shown when score_backlog() is called. This discrepency is easy to see in the log:
         #                1. do some reviews on another device and then sync
         #                2. open anki and load profile. the log will show that 0 scores have been found
         #                3. immediately sync backlog and see in log that more than 0 are there.
@@ -722,7 +738,7 @@ def grab_profile():
         if ah.config[ah.settings.profile]['score'] >= ah.user_settings["sched"] or ah.config[ah.settings.profile]['oldscore'] >= ah.user_settings["sched"]:
             if ah.user_settings["keep_log"]:
                 ah.log.debug("Asking user to sync backlog.")
-            if utils.askUser('New reviews found. Sync with Habitica now?\n\nWARNING: Make sure Anki is synced across your devices before you do this. If you do this and you have unsynced reviews on anohter device, those reviews will not be counted towards Habitica points!'):
+            if utils.askUser('New reviews found. Sync with Habitica now?\n\nWARNING: Make sure Anki is synced across your devices before you do this. If you do this and you have unsynced reviews on another device, those reviews will not be counted towards Habitica points!'):
                 if ah.user_settings["keep_log"]:
                     ah.log.debug('Syncing backlog')
                 score_backlog(True)
@@ -732,6 +748,7 @@ def grab_profile():
 #################
 ### Wrap Code ###
 #################
+
 
 addHook("profileLoaded", grab_profile)
 addHook("unloadProfile", save_stats)

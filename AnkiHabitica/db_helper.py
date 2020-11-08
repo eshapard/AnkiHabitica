@@ -13,7 +13,7 @@ timebox_seconds = 900  # hard-set 'timebox' length in seconds
 # of new points.
 
 # Return current local time as seconds from epoch
-# DEPRICATED: We'll use Anki's own function for this (intTime)
+# DEPRECATED: We'll use Anki own function for this (intTime)
 #    which is just time.time() multiplied be a scaling factor
 #    of 1000 for reviews and defaults to 1 for everything else
 # def newTime():
@@ -85,18 +85,18 @@ def seconds_count(start_date):
 def timebox_count(start_date):
     if ah.user_settings["keep_log"]:
         ah.log.debug("Begin function")
-    dbTime = seconds_count(start_date)
+    db_time = seconds_count(start_date)
     # Original code used actual timebox settings
     # but this leads to big problems when the user
     # changes the timebox length.
     # if mw.col.conf['timeLim'] > 0:
-    #    dbTboxes = dbTime // mw.col.conf['timeLim']
+    #    db_count = dbTime // mw.col.conf['timeLim']
     # else:
-    #    dbTboxes = 0
-    dbTboxes = dbTime // timebox_seconds
+    #    db_count = 0
+    db_count = db_time // timebox_seconds
     if ah.user_settings["keep_log"]:
-        ah.log.debug("End function returning: %s" % dbTboxes)
-    return dbTboxes
+        ah.log.debug("End function returning: %s" % db_count)
+    return db_count
 
 
 # Count mature cards

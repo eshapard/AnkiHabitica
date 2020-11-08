@@ -67,7 +67,7 @@ class HabiticaAPI(object):
             proxy_handler = urllib.request.ProxyHandler({
                 'http': proxy,
                 'https': proxy
-                })
+            })
             opener = urllib.request.build_opener(proxy_handler, handler)
         else:
             opener = urllib.request.build_opener(handler)

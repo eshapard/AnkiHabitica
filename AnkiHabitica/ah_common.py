@@ -24,7 +24,7 @@ class AnkiHabiticaCommon:
         roll = os.path.isfile(logName)
         fh = logging.handlers.RotatingFileHandler(logName, backupCount=5)
         if roll:  # log already exists, roll over!
-                fh.doRollover()
+            fh.doRollover()
 
         fmt = logging.Formatter(
             '%(asctime)s [%(threadName)14s:%(filename)18s:%(lineno)5s - %(funcName)30s()] %(levelname)8s: %(message)s')

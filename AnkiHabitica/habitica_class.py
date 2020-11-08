@@ -98,7 +98,8 @@ class Habitica(object):
             pngfile = self.api.export_avatar_as_png()  # Grab avatar png from Habitica
             if not pngfile:
                 if ah.user_settings["keep_log"]:
-                    ah.log.error("End function returning: %s" % False)  # Exit if we failed
+                    ah.log.error("End function returning: %s" %
+                                 False)  # Exit if we failed
                 return False  # Exit if we failed
             with open(self.avatarfile, 'wb') as outfile:
                 outfile.write(pngfile)
@@ -286,7 +287,8 @@ class Habitica(object):
                     ah.log.error("End function returning: %s" % False)
                 if ah.user_settings["debug"]:
                     raise
-                self.hrpg_showInfo("Your %s habit is not configured correctly yet.\nDelete it on Habitica and the addon will create it properly." % ah.user_settings["habit"])
+                self.hrpg_showInfo(
+                    "Your %s habit is not configured correctly yet.\nDelete it on Habitica and the addon will create it properly." % ah.user_settings["habit"])
                 return False
         if ah.user_settings["keep_log"]:
             ah.log.debug("Habit looks good")
@@ -308,7 +310,7 @@ class Habitica(object):
             # create task on habitica
             curtime = intTime()
             self.hnote = {'scoresincedate': curtime,
-                                 'scorecount': 0, 'sched': ah.user_settings["sched"]}
+                          'scorecount': 0, 'sched': ah.user_settings["sched"]}
             note = json.dumps(self.hnote)
             msg = self.api.create_task(
                 'habit', habit, False, note, 'int', 1, True)
@@ -335,7 +337,7 @@ class Habitica(object):
         if ah.user_settings["keep_log"]:
             ah.log.debug(str(last_review_time))
         self.hnote = {'scoresincedate': last_review_time,
-                             'scorecount': 0, 'sched': ah.user_settings["sched"]}
+                      'scorecount': 0, 'sched': ah.user_settings["sched"]}
         self.habit_grabbed = True
         if ah.user_settings["keep_log"]:
             ah.log.debug("reset: %s" % json.dumps(self.hnote))
@@ -430,39 +432,39 @@ class Habitica(object):
     def make_score_message(self, new_lvl, new_xp, new_mp, new_gp, new_hp, streak_bonus=0, crit_multiplier=0, drop_dialog=None):
         if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
-        hrpgresponse = "Huzzah! You've Earned Points!\nWell Done %s!\n" % (
+        hrpg_response = "Huzzah! You've Earned Points!\nWell Done %s!\n" % (
             self.name)
         # Check for increases and add to message
         if new_lvl > self.lvl:
             diff = int(new_lvl) - int(self.lvl)
-            hrpgresponse += "\nYOU LEVELED UP! NEW LEVEL: %s" % (new_lvl)
+            hrpg_response += "\nYOU LEVELED UP! NEW LEVEL: %s" % (new_lvl)
             self.save_avatar()  # save the new avatar!
-        hrpgresponse += "\nHP: %s" % (int(self.hp))
+        hrpg_response += "\nHP: %s" % (int(self.hp))
         if new_hp > self.hp:
             diff = int(new_hp) - int(self.hp)
-            hrpgresponse += "  +%s!" % (diff)
-        hrpgresponse += "\nXP: %s" % (int(self.xp))
+            hrpg_response += "  +%s!" % (diff)
+        hrpg_response += "\nXP: %s" % (int(self.xp))
         if new_xp > self.xp:
             diff = int(new_xp) - int(self.xp)
-            hrpgresponse += "  +%s!" % (diff)
-        hrpgresponse += "\nGP: %s" % (round(self.gp, 2))
+            hrpg_response += "  +%s!" % (diff)
+        hrpg_response += "\nGP: %s" % (round(self.gp, 2))
         if new_gp > self.gp:
             diff = int(new_gp) - int(self.gp)
-            hrpgresponse += "  +%s!" % (diff)
-        hrpgresponse += "\nMP: %s" % (int(self.mp))
+            hrpg_response += "  +%s!" % (diff)
+        hrpg_response += "\nMP: %s" % (int(self.mp))
         if new_mp > self.mp:
             diff = int(new_mp) - int(self.mp)
-            hrpgresponse += "  +%s!" % (diff)
+            hrpg_response += "  +%s!" % (diff)
         # Check for drops, streaks, and critical hits
         if crit_multiplier:
-            hrpgresponse += "\nCritical Hit! Bonus: +%s%%" % crit_multiplier
+            hrpg_response += "\nCritical Hit! Bonus: +%s%%" % crit_multiplier
         if streak_bonus:
-            hrpgresponse += "\nStreak Bonus! +%s" % (int(streak_bonus))
+            hrpg_response += "\nStreak Bonus! +%s" % (int(streak_bonus))
         if drop_dialog:
-            hrpgresponse += "\n\n%s" % str(drop_dialog)
+            hrpg_response += "\n\n%s" % str(drop_dialog)
         # Show message box
         if ah.user_settings["show_popup"]:
-            self.hrpg_showInfo(hrpgresponse)
+            self.hrpg_showInfo(hrpg_response)
         else:
             tooltip(_("Huzzah! You Scored Points!"), period=2500)
 
@@ -518,14 +520,16 @@ class Habitica(object):
                             streak_bonus = ""
                         else:
                             streak_bonus += "\n"
-                        streak_bonus += str(round((100 * msg['_tmp']['streakBonus']), 0))
+                        streak_bonus += str(round((100 *
+                                                   msg['_tmp']['streakBonus']), 0))
                     if 'crit' in msg['_tmp']:
                         # critical multiplier
                         if not crit_multiplier:
                             crit_multiplier = ""
                         else:
                             crit_multiplier += ", "
-                        crit_multiplier += str(round((100 * msg['_tmp']['crit']), 0))
+                        crit_multiplier += str(round((100 *
+                                                      msg['_tmp']['crit']), 0))
                     if 'drop' in msg['_tmp'] and 'dialog' in msg['_tmp']['drop']:
                         # drop happened
                         if not drop_dialog:
