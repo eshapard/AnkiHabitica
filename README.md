@@ -33,6 +33,10 @@ For use with Habitica: http://habitica.com
 
 The AnkiHabitica only runs on the desktop version of Anki, but as long as you sync your reviews on both ankidroid and the desktop version with ankiweb, the add-on will catch all the reviews.
 
+For version before Anki 2.1.20, you will need to sync your desktop version of Anki with Habitica manually. To do this, simply access the Tools menu from Anki desktop. Then go to AnkiHabitica > Score Habitica Backlog.
+
+If you use newer Anki, addon will automatically score backlog after syncing.
+
 ### Why are there some weird text in the notes of the Habit
 
 That's how the addon keeps track of things across multiple devices and multiple sessions.
