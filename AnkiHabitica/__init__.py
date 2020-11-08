@@ -22,6 +22,11 @@ from aqt.profiles import ProfileManager
 from aqt import *
 from aqt.main import AnkiQt
 from anki.utils import intTime
+try:
+    from aqt import gui_hooks
+    new_hook = True
+except:
+    new_hook = False
 
 from . import db_helper, habitica_class
 from .ah_common import AnkiHabiticaCommon as ah
@@ -282,57 +287,50 @@ AnkiHabiticaMenu.addAction(action)
 
 
 # Compare score to database
+# return weather success
 def compare_score_to_db():
     if ah.user_settings["keep_log"]:
         ah.log.debug("Begin function")
     # Return immediately if not ready
-    if not ready_or_not():
+    if not be_ready():
         if ah.user_settings["keep_log"]:
             ah.log.error("compare score: not ready")
-        if ah.user_settings["keep_log"]:
-            ah.log.warning("End function returning: %s" % False)
         return False
 
-    if ah.settings.initialized:
-        if ah.habitica.hnote != None and ah.habitica.hnote['scoresincedate']:
-            score_count = ah.habitica.hnote['scorecount']
-            start_date = ah.habitica.hnote['scoresincedate']
-            if ah.user_settings["keep_log"]:
-                ah.log.debug("From Habitica note. Score count: %s, Start date: %s (%s)" % (
-                    score_count, start_date, db_helper.prettyTime(start_date)))
-        else:  # We started offline and could not cotact Habitica
-            score_count = habitica_class.Habitica.offline_scorecount  # Starts at 0
-            start_date = habitica_class.Habitica.offline_sincedate  # start time of program
-            if ah.user_settings["keep_log"]:
-                ah.log.debug("Offline. Score count: %s, Start date: %s (%s)" % (
-                    score_count, start_date, db_helper.prettyTime(start_date)))
-        scored_points = int(score_count * ah.user_settings["sched"])
+    if ah.habitica.hnote != None and ah.habitica.hnote['scoresincedate']:
+        score_count = ah.habitica.hnote['scorecount']
+        start_date = ah.habitica.hnote['scoresincedate']
         if ah.user_settings["keep_log"]:
-            ah.log.debug("Scored points: %s" % scored_points)
-        db_score = calculate_db_score(start_date)
+            ah.log.debug("From Habitica note. Score count: %s, Start date: %s (%s)" % (
+                score_count, start_date, db_helper.prettyTime(start_date)))
+    else:  # We started offline and could not cotact Habitica
+        score_count = habitica_class.Habitica.offline_scorecount  # Starts at 0
+        start_date = habitica_class.Habitica.offline_sincedate  # start time of program
         if ah.user_settings["keep_log"]:
-            ah.log.debug("Database score: %s" % db_score)
-        newscore = db_score - scored_points
-        if newscore < 0:
-            newscore = 0  # sanity check
-        # Capture old score
-        ah.config[ah.settings.profile]['oldscore'] = ah.config[ah.settings.profile]['score']
-        ah.config[ah.settings.profile]['score'] = newscore
-        if ah.user_settings["keep_log"]:
-            ah.log.debug("Old score: %s" %
-                         ah.config[ah.settings.profile]['oldscore'])
-        if ah.user_settings["keep_log"]:
-            ah.log.debug("New score: %s" % newscore)
-        if ah.user_settings["keep_log"]:
-            ah.log.info("compare score: success")
-        if ah.user_settings["keep_log"]:
-            ah.log.debug("End function returning: %s" % True)
-        return True
+            ah.log.debug("Offline. Score count: %s, Start date: %s (%s)" % (
+                score_count, start_date, db_helper.prettyTime(start_date)))
+    scored_points = int(score_count * ah.user_settings["sched"])
     if ah.user_settings["keep_log"]:
-        ah.log.error("compare score: failed")
+        ah.log.debug("Scored points: %s" % scored_points)
+    db_score = calculate_db_score(start_date)
     if ah.user_settings["keep_log"]:
-        ah.log.error("End function returning: %s" % False)
-    return False
+        ah.log.debug("Database score: %s" % db_score)
+    newscore = db_score - scored_points
+    if newscore < 0:
+        newscore = 0  # sanity check
+    # Capture old score
+    ah.config[ah.settings.profile]['oldscore'] = ah.config[ah.settings.profile]['score']
+    ah.config[ah.settings.profile]['score'] = newscore
+    if ah.user_settings["keep_log"]:
+        ah.log.debug("Old score: %s" %
+                     ah.config[ah.settings.profile]['oldscore'])
+    if ah.user_settings["keep_log"]:
+        ah.log.debug("New score: %s" % newscore)
+    if ah.user_settings["keep_log"]:
+        ah.log.info("compare score: success")
+    if ah.user_settings["keep_log"]:
+        ah.log.debug("End function returning: %s" % True)
+    return True
 
 
 # Calculate score from database
@@ -462,17 +460,23 @@ def initialize_habitica_class():
         ah.log.debug("End function")
 
 
-# Run various checks to see if we are ready
-def ready_or_not():
+# Run various checks to see if we are ready and try to make it ready
+def be_ready():
     if ah.user_settings["keep_log"]:
         ah.log.debug("Begin function")
     if ah.user_settings["keep_log"]:
         ah.log.info("Checking if %s is ready" % ah.settings.profile)
+
     # Configure if not already
     if not ah.settings.configured:
         if ah.user_settings["keep_log"]:
-            ah.log.info("Ready or Not: not configured")
+            ah.log.info("Not configured")
         configure_ankihabitica()
+
+    if not ah.settings.configured:
+        if ah.user_settings["keep_log"]:
+            ah.log.info("Not Ready: can't configured")
+        return False
 
     # Grab user and token if in config
     if not ah.settings.user and not ah.settings.token:
@@ -482,52 +486,41 @@ def ready_or_not():
         except:
             pass
 
-    # Return immediately if we still don't have both the userid and token
     if not ah.settings.user and not ah.settings.token:
         if ah.user_settings["keep_log"]:
             ah.log.warning("Not Ready: no user or token")
-        if ah.user_settings["keep_log"]:
-            ah.log.warning("End function returning: %s" % False)
         return False
 
     # initialize habitica class if AnkiHabitica is configured
     # and class is not yet initialized
-    if ah.settings.configured and not ah.settings.initialized:
+    if not ah.settings.initialized:
         if ah.user_settings["keep_log"]:
-            ah.log.info("Ready or not: Initializing habitica")
+            ah.log.info("Initializing habitica")
         initialize_habitica_class()
+
     # Check to make sure habitica class is initialized
     if not ah.settings.initialized:
         if ah.user_settings["keep_log"]:
-            ah.log.warning("Ready or not: Not initialized")
-        if ah.user_settings["keep_log"]:
-            ah.log.warning("End function returning: %s" % False)
+            ah.log.warning("Not Ready: Not initialized")
         return False
 
-    if ah.settings.configured and ah.settings.initialized:
-        if ah.user_settings["keep_log"]:
-            ah.log.info("Ready: %s %s" % (ah.settings.user, ah.settings.token))
-        # Try to grab any habit ids that we've found.
-        try:
-            ah.config[ah.settings.profile]['habit_id'] = ah.habitica.habit_id
-        except:
-            pass
-        # If we don't have any habits grabbed, attempt to grab them
-        if ah.habitica.hnote == None:
-            habitica_class.Habitica.offline_recover_attempt += 1
-            if habitica_class.Habitica.offline_recover_attempt % 3 == 0:
-                if ah.user_settings["keep_log"]:
-                    ah.log.info("Trying to grab habits")
-                ah.habitica.init_update()
-        if ah.user_settings["keep_log"]:
-            ah.log.debug("End function returning: %s" % True)
-        return True
-    else:
-        if ah.user_settings["keep_log"]:
-            ah.log.warning("Not Ready Final")
-        if ah.user_settings["keep_log"]:
-            ah.log.warning("End function returning: %s" % False)
-        return False
+    if ah.user_settings["keep_log"]:
+        ah.log.info("Ready: %s %s" % (ah.settings.user, ah.settings.token))
+    # Try to grab any habit ids that we've found.
+    try:
+        ah.config[ah.settings.profile]['habit_id'] = ah.habitica.habit_id
+    except:
+        pass
+    # If we don't have any habits grabbed, attempt to grab them
+    if ah.habitica.hnote == None:
+        habitica_class.Habitica.offline_recover_attempt += 1
+        if habitica_class.Habitica.offline_recover_attempt % 3 == 0:
+            if ah.user_settings["keep_log"]:
+                ah.log.info("Trying to grab habits")
+            ah.habitica.init_update()
+    if ah.user_settings["keep_log"]:
+        ah.log.debug("End function returning: %s" % True)
+    return True
 
 
 # Process Habitica Points in real time
@@ -540,7 +533,7 @@ def hrpg_realtime(dummy=None):
     drop_type = ""
 
     # Check if we are ready; exit if not
-    if not ready_or_not():
+    if not be_ready():
         if ah.user_settings["keep_log"]:
             ah.log.warning("End function returning: %s" % False)
         return False
@@ -605,7 +598,7 @@ def score_backlog(silent=False):
         return False
 
     # Exit if not ready
-    if not ready_or_not():
+    if not be_ready():
         if ah.user_settings["keep_log"]:
             ah.log.warning("End function returning: %s" % False)
         return False
@@ -706,6 +699,35 @@ avatar_action = QAction("Refresh Habitica Avatar", mw)
 avatar_action.triggered.connect(refresh_habitica_avatar)
 AnkiHabiticaMenu.addAction(avatar_action)
 
+
+def check_unsynced_score():
+    if ah.user_settings["keep_log"]:
+        ah.log.debug("Begin function")
+
+    if not (be_ready() and ah.user_settings["check_db_on_profile_load"] and ah.habitica.grab_scorecounter() and compare_score_to_db()):
+        if ah.user_settings["keep_log"]:
+            ah.log.debug("Can't check")
+        return
+
+    if ah.user_settings["keep_log"]:
+        ah.log.debug("%s point(s) earned of %s required" % (
+            ah.config[ah.settings.profile]['score'], ah.user_settings["sched"]))
+    if ah.config[ah.settings.profile]['score'] >= ah.user_settings["sched"] or ah.config[ah.settings.profile]['oldscore'] >= ah.user_settings["sched"]:
+        if ah.user_settings["keep_log"]:
+            ah.log.debug("Asking user to sync backlog.")
+        if utils.askUser(
+            '''New reviews found. Sync with Habitica now? Anki will freeze while syncing.
+
+WARNING: Make sure Anki is synced across your devices before you do this. If you do this and you have unsynced reviews on another device, those reviews will not be counted towards Habitica points!
+'''):
+            if ah.user_settings["keep_log"]:
+                ah.log.debug('Syncing backlog')
+            score_backlog(True)
+
+
+if new_hook:
+    gui_hooks.sync_did_finish.append(check_unsynced_score)
+
 #################################
 ### Support Multiple Profiles ###
 #################################
@@ -722,28 +744,8 @@ def grab_profile():
         ah.config[ah.settings.profile] = {}
         if ah.user_settings["keep_log"]:
             ah.log.info("adding %s to config dict" % ah.settings.profile)
-    ready_or_not()
-    if ah.user_settings["check_db_on_profile_load"] and ah.settings.configured and ah.habitica.grab_scorecounter() and compare_score_to_db():
-        #         TODO: the idea was to check the db (fast) then then ask the user if they wanted to sync with Habitica (slow), but
-        #                there's an issue where ['score'] shows a different value after the above call to compare_score_to_db() then
-        #                what is shown when score_backlog() is called. This discrepency is easy to see in the log:
-        #                1. do some reviews on another device and then sync
-        #                2. open anki and load profile. the log will show that 0 scores have been found
-        #                3. immediately sync backlog and see in log that more than 0 are there.
-        #                So, I'm just running score_backlog() either way.
 
-        if ah.user_settings["keep_log"]:
-            ah.log.debug("%s point(s) earned of %s required" % (
-                ah.config[ah.settings.profile]['score'], ah.user_settings["sched"]))
-        if ah.config[ah.settings.profile]['score'] >= ah.user_settings["sched"] or ah.config[ah.settings.profile]['oldscore'] >= ah.user_settings["sched"]:
-            if ah.user_settings["keep_log"]:
-                ah.log.debug("Asking user to sync backlog.")
-            if utils.askUser('New reviews found. Sync with Habitica now?\n\nWARNING: Make sure Anki is synced across your devices before you do this. If you do this and you have unsynced reviews on another device, those reviews will not be counted towards Habitica points!'):
-                if ah.user_settings["keep_log"]:
-                    ah.log.debug('Syncing backlog')
-                score_backlog(True)
-    if ah.user_settings["keep_log"]:
-        ah.log.debug("End function")
+    check_unsynced_score()
 
 #################
 ### Wrap Code ###

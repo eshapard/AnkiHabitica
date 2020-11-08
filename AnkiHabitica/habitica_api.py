@@ -29,7 +29,7 @@ class HabiticaAPI(object):
         if ah.user_settings["keep_log"]:
             ah.log.debug("End function")
 
-    def v3_request(self, method, path, data={'dummy': 'dummy'}, timeout=5):
+    def v3_request(self, method, path, data={'dummy': 'dummy'}, timeout=10):
         context = ssl._create_unverified_context()
         # Dummy data needed for post, put, and delete commands now.
         if ah.user_settings["keep_log"]:
