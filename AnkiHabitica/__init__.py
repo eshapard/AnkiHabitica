@@ -31,7 +31,7 @@ except:
 from . import db_helper, habitica_class
 from .ah_common import AnkiHabiticaCommon as ah
 
-__version__ = "2.1.10"
+__version__ = "2.1.11"
 
 ah.user_settings = mw.addonManager.getConfig(__name__)
 
@@ -726,7 +726,10 @@ WARNING: Make sure Anki is synced across your devices before you do this. If you
 
 
 if new_hook:
-    gui_hooks.sync_did_finish.append(check_unsynced_score)
+    try:
+        gui_hooks.sync_did_finish.append(check_unsynced_score)
+    except AttributeError:
+        pass
 
 #################################
 ### Support Multiple Profiles ###
