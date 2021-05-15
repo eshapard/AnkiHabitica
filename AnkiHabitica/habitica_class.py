@@ -14,6 +14,7 @@ from . import db_helper
 from anki.utils import intTime
 from aqt.utils import tooltip
 from .ah_common import AnkiHabiticaCommon as ah
+from urllib.error import HTTPError
 
 
 # TODO: make sure script can survive internet outages.
@@ -44,7 +45,7 @@ class Habitica(object):
         self.hnote = None
         self.habit_grabbed = False  # marked true when we get scorecounter.
         # holder for habit IDs
-        self.habit_id = ah.config[ah.settings.profile]['habit_id']
+        self.habit_id = ah.config[ah.settings.profile].get('habit_id')
         self.missing = False  # holds missing habits
         self.init_update()  # check habits, grab user object, get avatar
         if ah.user_settings["keep_log"]:
@@ -364,7 +365,22 @@ class Habitica(object):
             self.check_anki_habit()
         if ah.user_settings["keep_log"]:
             ah.log.debug("grabbing scorecounter: %s" % str(self.habit_id))
-        response = self.api.task(self.habit_id)
+        try:
+            response = self.api.task(self.habit_id)
+        except HTTPError as err:
+            if err.code == 401:
+                self.hrpg_showInfo("Your User ID or API Token is incorrect, please setup again with correct infomation.")
+                ah.habitica = None
+                ah.settings.initialized = False
+                ah.config[ah.settings.profile].pop("user")
+                ah.config[ah.settings.profile].pop("token")
+                ah.settings.user = None
+                ah.settings.token = None
+                if ah.user_settings["keep_log"]:
+                    ah.log.warning("End function returning: %s" % False)
+                return False
+            else:
+                raise
         if ah.user_settings["keep_log"]:
             ah.log.debug(response['notes'])
         # Try to grab the scorecount and score since date
