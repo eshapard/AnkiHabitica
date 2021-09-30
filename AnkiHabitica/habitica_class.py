@@ -1,4 +1,3 @@
-#!/usr/bin/python
 from .habitica_api import HabiticaAPI
 import os
 import sys
@@ -455,19 +454,19 @@ class Habitica(object):
             diff = int(new_lvl) - int(self.lvl)
             hrpg_response += "\nYOU LEVELED UP! NEW LEVEL: %s" % (new_lvl)
             self.save_avatar()  # save the new avatar!
-        hrpg_response += "\nHP: %s" % (int(self.hp))
+        hrpg_response += "\nHP: %s" % (int(new_hp))
         if new_hp > self.hp:
             diff = int(new_hp) - int(self.hp)
             hrpg_response += "  +%s!" % (diff)
-        hrpg_response += "\nXP: %s" % (int(self.xp))
+        hrpg_response += "\nXP: %s" % (int(new_xp))
         if new_xp > self.xp:
             diff = int(new_xp) - int(self.xp)
             hrpg_response += "  +%s!" % (diff)
-        hrpg_response += "\nGP: %s" % (round(self.gp, 2))
+        hrpg_response += "\nGP: %s" % (round(new_gp, 2))
         if new_gp > self.gp:
             diff = int(new_gp) - int(self.gp)
             hrpg_response += "  +%s!" % (diff)
-        hrpg_response += "\nMP: %s" % (int(self.mp))
+        hrpg_response += "\nMP: %s" % (int(new_mp))
         if new_mp > self.mp:
             diff = int(new_mp) - int(self.mp)
             hrpg_response += "  +%s!" % (diff)
