@@ -467,7 +467,7 @@ class Habitica(object):
             diff = int(new_gp) - int(self.gp)
             hrpg_response += "  +%s!" % (diff)
         hrpg_response += "\nMP: %s" % (int(new_mp))
-        if new_mp > self.mp:
+        if int(new_mp) > int(self.mp):
             diff = int(new_mp) - int(self.mp)
             hrpg_response += "  +%s!" % (diff)
         # Check for drops, streaks, and critical hits

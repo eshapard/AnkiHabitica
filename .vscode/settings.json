@@ -6,5 +6,5 @@
         "hrpg",
         "sched"
     ],
-    "python.formatting.provider": "yapf"
+    "python.formatting.provider": "none"
 }
