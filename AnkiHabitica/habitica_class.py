@@ -421,20 +421,22 @@ class Habitica(object):
     def post_scorecounter(self):
         if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
-        try:
-            habitID = self.habit_id
-            if ah.user_settings["keep_log"]:
-                ah.log.debug("posting scorecounter: %s" % self.hnote)
-            datastring = json.dumps(self.hnote)
-            data = {"notes": datastring}
-            self.api.update_task(habitID, data)
-            if ah.user_settings["keep_log"]:
-                ah.log.debug("End function returning: %s" % True)
-            return True
-        except:
-            if ah.user_settings["keep_log"]:
-                ah.log.error("End function returning: %s" % False)
-            return False
+        # try:
+        habitID = self.habit_id
+        if ah.user_settings["keep_log"]:
+            ah.log.debug("posting scorecounter: %s" % self.hnote)
+        datastring = json.dumps(self.hnote)
+        data = {"notes": datastring}
+        self.api.update_task(habitID, data)
+        if ah.user_settings["keep_log"]:
+            ah.log.debug("End function returning: %s" % True)
+        return True
+        # except:
+        #     if ah.user_settings["debug"]:
+        #         raise
+        #     if ah.user_settings["keep_log"]:
+        #         ah.log.error("End function returning: %s" % False)
+        #     return False
 
     def test_internet(self):
         if ah.user_settings["keep_log"]:

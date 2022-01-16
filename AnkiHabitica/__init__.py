@@ -722,7 +722,7 @@ WARNING: Make sure Anki is synced across your devices before you do this. If you
 '''):
             if ah.user_settings["keep_log"]:
                 ah.log.debug('Syncing backlog')
-            score_backlog(True)
+            score_backlog()
 
 
 if new_hook:
