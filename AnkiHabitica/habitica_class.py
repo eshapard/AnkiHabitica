@@ -592,8 +592,8 @@ class Habitica(object):
             health = int(100 * self.hp / self.ht)
             experience = int(100 * self.xp / self.xt)
             mana = int(100 * self.mp / self.mt)
-            string = "<font color='firebrick'>%s</font> | <font color='darkorange'>%s</font> | <font color='darkblue'>%s</font>" % (
-                health, experience, mana)
+            string = "<font color='#f74e52'>%s(%s%%)</font> | <font color='#ffbe5d'>%s(%s%%)</font> | <font color='#50b5e9'>%s(%s%%)</font> | <font color='#BF7D1A'>%s</font>" % (
+                int(self.hp), health, int(self.xp), experience, int(self.mp), mana, int(self.gp))
         else:
             string = False
         if ah.user_settings["keep_log"]:
