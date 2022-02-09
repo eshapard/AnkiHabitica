@@ -10,6 +10,7 @@ import json
 import random
 from .ah_common import AnkiHabiticaCommon as ah
 
+X_CLIENT = "f0d22133-1344-4c2f-8f1c-426ffb90a33d-AnkiHabitica"
 
 class HabiticaAPI(object):
     DIRECTION_UP = "up"
@@ -46,6 +47,7 @@ class HabiticaAPI(object):
             req = urllib.request.Request(url)
         req.add_header('x-api-user', self.user_id)
         req.add_header('x-api-key', self.api_key)
+        req.add_header('x-client', X_CLIENT)
         if method == "put":
             req.add_header('Content-Type', 'application/json')
             req.get_method = lambda: "PUT"
