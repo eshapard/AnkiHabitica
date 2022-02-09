@@ -41,7 +41,14 @@ class Habitica(object):
         self.mp = 0
         self.mt = 0
         self.stats = {}
+
+        # the data post in habit description
+        # 3 elements
+        # scoresincedate: the time of last score backlog
+        # scorecount: scored count by reaching sched instead of backlog since scoresincedate
+        # sched: compare to local sched "this should prevent problems caused by changing the reward schedule"
         self.hnote = None
+
         self.habit_grabbed = False  # marked true when we get scorecounter.
         # holder for habit IDs
         self.habit_id = ah.config[ah.settings.profile].get('habit_id')

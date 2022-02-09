@@ -3,9 +3,11 @@
 # Author: Edward Shapard <ed.shapard@gmail.com>
 # With Database Code by: Tim Wilson
 # Port to Anki 2.1 by 71e6fd52 <71e6fd52@gmail.com>
+# Maintainer (since 2019-05): 71e6fd52 <71e6fd52@gmail.com>
 # Version 2.1.13
 # License: GNU GPL v3 <www.gnu.org/licenses/gpl.html>
 
+import time
 import urllib.request
 import urllib.error
 import urllib.parse
@@ -638,33 +640,34 @@ def score_backlog(silent=False):
         progressLabel = "Scoring %s point%s to Habitica" % (
             numScores, "" if numScores == 0 else "s")
         mw.progress.start(max=numScores, label=progressLabel)
-        while i <= 2*numScores and ah.config[ah.settings.profile]['score'] >= ah.user_settings["sched"] and ah.settings.internet:
+        while i <= 25 and ah.config[ah.settings.profile]['score'] >= ah.user_settings["sched"] and ah.settings.internet:
             try:
                 ah.habitica.silent_earn_points()
                 ah.config[ah.settings.profile]['score'] -= ah.user_settings["sched"]
                 i += 1
                 p += 1
                 mw.progress.update()
-            except:
+            except urllib.error.HTTPError as e:
+                if e.code == 429:
+                    break
                 i += 1
         mw.progress.finish()
+        tip_text = "%s point%s scored on Habitica%s" % (p, "" if p == 1 else "s",
+            "" if ah.config[ah.settings.profile]['score'] == 0 else ", and ignore the remaining beacuse of Habitica limit")
         if not silent:
-            utils.showInfo("%s point%s scored on Habitica" %
-                           (p, "" if p == 1 else "s"))
+            utils.showInfo(tip_text)
         if ah.user_settings["keep_log"]:
-            ah.log.info("%s point%s scored on Habitica" %
-                        (p, "" if p == 1 else "s"))
-        if ah.user_settings["keep_log"]:
+            ah.log.info(tip_text)
             ah.log.info("New scorecount: %s" %
                         ah.habitica.hnote['scorecount'])
-        if ah.user_settings["keep_log"]:
             ah.log.info("New config score: %s" %
                         ah.config[ah.settings.profile]['score'])
         ah.habitica.hnote['scorecount'] = habitica_class.Habitica.offline_scorecount = 0
         ah.habitica.hnote['scoresincedate'] = habitica_class.Habitica.offline_sincedate = db_helper.latest_review_time()
-        ah.config[ah.settings.profile]['score'] = ah.habitica.hnote['scoresincedate']
+        ah.config[ah.settings.profile]['score'] = 0
         ah.habitica.post_scorecounter()
         runHook("HabiticaAfterScore")
+        time.sleep(1)
         save_stats(None, None)
     if ah.user_settings["keep_log"]:
         ah.log.debug("End function")
