@@ -74,7 +74,10 @@ class HabiticaAPI(object):
         else:
             opener = urllib.request.build_opener(handler)
 
-        response = json.load(opener.open(req, timeout=timeout))
+        try:
+            response = json.load(opener.open(req, timeout=timeout))
+        except:
+            return "errored while making a request"
 
         if response['success']:
             out = response['data']
