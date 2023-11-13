@@ -15,7 +15,7 @@ import os
 import sys
 import json
 import _thread
-from PyQt5.QtWidgets import *
+from PyQt6 import QtCore, QtGui, QtWidgets *
 from anki.hooks import wrap, addHook, runHook
 from aqt.reviewer import Reviewer
 from anki.sched import Scheduler
