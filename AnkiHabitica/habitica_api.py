@@ -1,13 +1,12 @@
 # Habitica API
-import urllib.request
-import urllib.error
-import urllib.parse
-import urllib.request
-import urllib.parse
-import urllib.error
-import ssl
 import json
 import random
+import ssl
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+
 from .ah_common import AnkiHabiticaCommon as ah
 
 X_CLIENT = "f0d22133-1344-4c2f-8f1c-426ffb90a33d-AnkiHabitica"
@@ -74,7 +73,16 @@ class HabiticaAPI(object):
         else:
             opener = urllib.request.build_opener(handler)
 
-        response = json.load(opener.open(req, timeout=timeout))
+        try:
+            response = json.load(opener.open(req, timeout=timeout))
+        except urllib.error.HTTPError as e:
+            if e.code == 429:
+                delay = e.headers['Retry-After']
+                delay = int(delay)
+                print("touch the rating limit, waiting " + delay + "seconds")
+                time.sleep(delay)
+                print("try to request " + req + "again")
+                response = json.load(opener.open(req, timeout=timeout))
 
         if response['success']:
             out = response['data']
