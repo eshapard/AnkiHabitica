@@ -1,19 +1,21 @@
-from .habitica_api import HabiticaAPI
+import _thread
+import datetime
+import json
 import os
 import sys
-import json
-import datetime
 import time
-import _thread
-from aqt import *
-from aqt.main import AnkiQt
+from urllib.error import HTTPError
+
 from anki.hooks import runHook
 from anki.lang import _
-from . import db_helper
 from anki.utils import intTime
+from aqt import *
+from aqt.main import AnkiQt
 from aqt.utils import tooltip
+
+from . import db_helper
 from .ah_common import AnkiHabiticaCommon as ah
-from urllib.error import HTTPError
+from .habitica_api import HabiticaAPI
 
 
 # TODO: make sure script can survive internet outages.
@@ -128,19 +130,32 @@ class Habitica(object):
             ah.log.info("Msg: %s" % text.replace('\n', ' '))
         # display a small message window with an OK Button
         parent = aqt.mw.app.activeWindow() or aqt.mw
-        icon = QMessageBox.Information
+        try:
+            icon = QMessageBox.Information
+        except AttributeError:
+            icon = QMessageBox.Icon.Information
         mb = QMessageBox(parent)
         mb.setText(text)
         if os.path.isfile(self.iconfile):
             mb.setIconPixmap(QPixmap(self.iconfile))
         else:
             mb.setIcon(icon)
-        mb.setWindowModality(Qt.WindowModal)
+        try:
+            mb.setWindowModality(Qt.WindowModal)
+        except AttributeError:
+            mb.setWindowModality(Qt.WindowModality.WindowModal)
         mb.setWindowTitle("Anki Habitica")
-        b = mb.addButton(QMessageBox.Ok)
+        try:
+            btn = QMessageBox.Ok
+        except AttributeError:
+            btn = QMessageBox.StandardButton.Ok
+        b = mb.addButton(btn)
         b.setDefault(True)
         b.setAutoDefault(True)
-        out = mb.exec_()
+        try:
+            out = mb.exec_()
+        except AttributeError:
+            out = mb.exec()
         if ah.user_settings["keep_log"]:
             ah.log.debug("End function returning: %s" % out)
         return out

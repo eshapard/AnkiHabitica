@@ -7,23 +7,31 @@
 # Version 2.1.14
 # License: GNU GPL v3 <www.gnu.org/licenses/gpl.html>
 
-import time
-import urllib.request
-import urllib.error
-import urllib.parse
+import _thread
+import json
 import os
 import sys
-import json
-import _thread
-from PyQt5.QtWidgets import *
-from anki.hooks import wrap, addHook, runHook
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+
+# from PyQt5.QtWidgets import *
+from anki.hooks import addHook, runHook, wrap
+from aqt.qt import *
 from aqt.reviewer import Reviewer
-from anki.sched import Scheduler
+
+try:
+    from anki.sched import Scheduler
+except ModuleNotFoundError:
+    from anki.scheduler import v3
+
 from anki.sync import Syncer
-from aqt.profiles import ProfileManager
+from anki.utils import intTime
 from aqt import *
 from aqt.main import AnkiQt
-from anki.utils import intTime
+from aqt.profiles import ProfileManager
+
 try:
     from aqt import gui_hooks
     new_hook = True
