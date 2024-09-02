@@ -21,12 +21,13 @@ class HabiticaAPI(object):
     TYPE_TODO = "todo"
     TYPE_REWARD = "reward"
 
-    def __init__(self, user_id, api_key):
+    def __init__(self, user_id, api_key, habitica_url):
         if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
         self.user_id = user_id
         self.api_key = api_key
-        self.v3_url = "https://habitica.com/api/v3/"
+        self.habitica_url = habitica_url.rstrip("/") + "/"
+        self.v3_url = f"{self.habitica_url}api/v3/"
         if ah.user_settings["keep_log"]:
             ah.log.debug("End function")
 
@@ -245,7 +246,7 @@ class HabiticaAPI(object):
     def export_avatar_as_png(self):
         if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
-        url = "http://habitica.com/export/avatar-%s.png" % self.user_id
+        url = f"{self.habitica_url}export/avatar-%s.png" % self.user_id
         req = urllib.request.Request(url)
         req.add_header('x-api-user', self.user_id)
         req.add_header('x-api-key', self.api_key)

@@ -2,6 +2,7 @@
   "auto_earn": true,
   "barcolor": "#603960",
   "barbgcolor": "#BFBFBF",
+  "habitica_url": "https://habitica.com",
   "check_db_on_profile_load": true,
   "debug": false,
   "deckpoints": 0,
