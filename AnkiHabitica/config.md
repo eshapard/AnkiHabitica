@@ -17,3 +17,4 @@
 * `step`, this is how many points each tick of the progress bar represents
 * `timeboxpoints`, points earned for each 15 min "timebox"
 * `tries_eq`, this many wrong answers gives us one point
+* `habitica_url`, the URL of the Habitica instance. All API calls will be made to that URL
