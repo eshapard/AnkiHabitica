@@ -32,7 +32,7 @@ class Habitica(object):
     def __init__(self):
         if ah.user_settings["keep_log"]:
             ah.log.debug("Begin function")
-        self.api = HabiticaAPI(ah.settings.user, ah.settings.token)
+        self.api = HabiticaAPI(ah.settings.user, ah.settings.token, ah.user_settings['habitica_url'])
         self.name = 'Anki User'
         self.lvl = 0
         self.xp = 0
