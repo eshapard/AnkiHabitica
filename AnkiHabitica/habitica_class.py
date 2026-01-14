@@ -300,7 +300,7 @@ class Habitica(object):
             try:
                 if ah.user_settings["keep_log"]:
                     ah.log.debug("Updating Habit")
-                self.update_anki_habit(self.habit_id)
+                self.update_anki_habit()
                 if ah.user_settings["keep_log"]:
                     ah.log.debug("End function returning: %s" % True)
                 return True
